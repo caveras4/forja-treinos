@@ -1,0 +1,16 @@
+{
+  "formato": "forja-treino",
+  "versao": 1,
+  "treino": {
+    "nome": "Treino D",
+    "foco": "Ombros e Trapézio",
+    "cor": "crimson",
+    "exercicios": [
+      { "id": "desenvolvimento-militar", "series": 4, "repeticoes": 8, "cargaKg": 30 },
+      { "id": "elevacao-lateral", "series": 4, "repeticoes": 15, "cargaKg": 8 },
+      { "id": "crucifixo-inverso-maquina", "series": 3, "repeticoes": 12 },
+      { "id": "face-pull", "series": 3, "repeticoes": 15, "cargaKg": 17.5 },
+      { "id": "encolhimento-halteres", "series": 3, "repeticoes": 12, "cargaKg": 24 }
+    ]
+  }
+}
