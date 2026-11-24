@@ -2,6 +2,7 @@ package com.fitforge.treinos.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -41,6 +42,22 @@ val ForjaTypography = Typography(
     )
 )
 
+/**
+ * As paletas definem só primary/surface. Sem isto, chips, botões tonais e menus usam
+ * os containers padrão do Material 3 (roxos), fora da paleta escolhida.
+ */
+private fun ColorScheme.withPaletteContainers(): ColorScheme = copy(
+    secondaryContainer = primaryContainer,
+    onSecondaryContainer = onPrimaryContainer,
+    tertiaryContainer = primaryContainer,
+    onTertiaryContainer = onPrimaryContainer,
+    surfaceContainerLowest = surface,
+    surfaceContainerLow = surface,
+    surfaceContainer = surface,
+    surfaceContainerHigh = surfaceVariant,
+    surfaceContainerHighest = surfaceVariant
+)
+
 @Composable
 fun ForjaTreinosTheme(
     palette: AppPalette = AppPalette.EMERALD,
@@ -59,8 +76,8 @@ fun ForjaTreinosTheme(
         useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        isDark -> paletteDarkScheme(palette)
-        else -> paletteLightScheme(palette)
+        isDark -> paletteDarkScheme(palette).withPaletteContainers()
+        else -> paletteLightScheme(palette).withPaletteContainers()
     }
 
     MaterialTheme(

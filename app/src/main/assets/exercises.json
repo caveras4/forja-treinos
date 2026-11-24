@@ -1,0 +1,1049 @@
+{
+ "fonte": "free-exercise-db (Unlicense)",
+ "exercicios": [
+  {
+   "id": "supino-reto-barra",
+   "nome": "Supino reto com barra",
+   "grupo": "Peito",
+   "midia": "exercises/supino-reto-barra.webp"
+  },
+  {
+   "id": "supino-reto-halteres",
+   "nome": "Supino reto com halteres",
+   "grupo": "Peito",
+   "midia": "exercises/supino-reto-halteres.webp"
+  },
+  {
+   "id": "supino-inclinado-barra",
+   "nome": "Supino inclinado com barra",
+   "grupo": "Peito",
+   "midia": "exercises/supino-inclinado-barra.webp"
+  },
+  {
+   "id": "supino-inclinado-halteres",
+   "nome": "Supino inclinado com halteres",
+   "grupo": "Peito",
+   "midia": "exercises/supino-inclinado-halteres.webp"
+  },
+  {
+   "id": "supino-declinado-barra",
+   "nome": "Supino declinado com barra",
+   "grupo": "Peito",
+   "midia": "exercises/supino-declinado-barra.webp"
+  },
+  {
+   "id": "supino-declinado-halteres",
+   "nome": "Supino declinado com halteres",
+   "grupo": "Peito",
+   "midia": "exercises/supino-declinado-halteres.webp"
+  },
+  {
+   "id": "supino-reto-smith",
+   "nome": "Supino reto no Smith",
+   "grupo": "Peito",
+   "midia": "exercises/supino-reto-smith.webp"
+  },
+  {
+   "id": "supino-inclinado-smith",
+   "nome": "Supino inclinado no Smith",
+   "grupo": "Peito",
+   "midia": "exercises/supino-inclinado-smith.webp"
+  },
+  {
+   "id": "supino-maquina",
+   "nome": "Supino na máquina",
+   "grupo": "Peito",
+   "midia": "exercises/supino-maquina.webp"
+  },
+  {
+   "id": "supino-inclinado-maquina",
+   "nome": "Supino inclinado na máquina",
+   "grupo": "Peito",
+   "midia": "exercises/supino-inclinado-maquina.webp"
+  },
+  {
+   "id": "crucifixo-reto",
+   "nome": "Crucifixo reto com halteres",
+   "grupo": "Peito",
+   "midia": "exercises/crucifixo-reto.webp"
+  },
+  {
+   "id": "crucifixo-inclinado",
+   "nome": "Crucifixo inclinado com halteres",
+   "grupo": "Peito",
+   "midia": "exercises/crucifixo-inclinado.webp"
+  },
+  {
+   "id": "voador-peck-deck",
+   "nome": "Voador (peck deck)",
+   "grupo": "Peito",
+   "midia": "exercises/voador-peck-deck.webp"
+  },
+  {
+   "id": "crossover-polia-alta",
+   "nome": "Crossover na polia alta",
+   "grupo": "Peito",
+   "midia": "exercises/crossover-polia-alta.webp"
+  },
+  {
+   "id": "crossover-polia-baixa",
+   "nome": "Crossover na polia baixa",
+   "grupo": "Peito",
+   "midia": "exercises/crossover-polia-baixa.webp"
+  },
+  {
+   "id": "crucifixo-inclinado-cabo",
+   "nome": "Crucifixo inclinado no cabo",
+   "grupo": "Peito",
+   "midia": "exercises/crucifixo-inclinado-cabo.webp"
+  },
+  {
+   "id": "flexao-de-braco",
+   "nome": "Flexão de braço",
+   "grupo": "Peito",
+   "midia": "exercises/flexao-de-braco.webp"
+  },
+  {
+   "id": "flexao-aberta",
+   "nome": "Flexão de braço aberta",
+   "grupo": "Peito",
+   "midia": "exercises/flexao-aberta.webp"
+  },
+  {
+   "id": "flexao-pes-elevados",
+   "nome": "Flexão com pés elevados",
+   "grupo": "Peito",
+   "midia": "exercises/flexao-pes-elevados.webp"
+  },
+  {
+   "id": "pullover-halter",
+   "nome": "Pullover com halter",
+   "grupo": "Peito",
+   "midia": "exercises/pullover-halter.webp"
+  },
+  {
+   "id": "puxada-frontal-aberta",
+   "nome": "Puxada frontal aberta",
+   "grupo": "Costas",
+   "midia": "exercises/puxada-frontal-aberta.webp"
+  },
+  {
+   "id": "puxada-frontal-fechada",
+   "nome": "Puxada frontal fechada",
+   "grupo": "Costas",
+   "midia": "exercises/puxada-frontal-fechada.webp"
+  },
+  {
+   "id": "puxada-triangulo",
+   "nome": "Puxada com triângulo",
+   "grupo": "Costas",
+   "midia": "exercises/puxada-triangulo.webp"
+  },
+  {
+   "id": "puxada-supinada",
+   "nome": "Puxada supinada",
+   "grupo": "Costas",
+   "midia": "exercises/puxada-supinada.webp"
+  },
+  {
+   "id": "puxada-unilateral",
+   "nome": "Puxada unilateral",
+   "grupo": "Costas",
+   "midia": "exercises/puxada-unilateral.webp"
+  },
+  {
+   "id": "barra-fixa",
+   "nome": "Barra fixa",
+   "grupo": "Costas",
+   "midia": "exercises/barra-fixa.webp"
+  },
+  {
+   "id": "barra-fixa-supinada",
+   "nome": "Barra fixa supinada",
+   "grupo": "Costas",
+   "midia": "exercises/barra-fixa-supinada.webp"
+  },
+  {
+   "id": "pulldown-bracos-estendidos",
+   "nome": "Pulldown com braços estendidos",
+   "grupo": "Costas",
+   "midia": "exercises/pulldown-bracos-estendidos.webp"
+  },
+  {
+   "id": "pulldown-corda",
+   "nome": "Pulldown com corda",
+   "grupo": "Costas",
+   "midia": "exercises/pulldown-corda.webp"
+  },
+  {
+   "id": "remada-baixa",
+   "nome": "Remada baixa sentada",
+   "grupo": "Costas",
+   "midia": "exercises/remada-baixa.webp"
+  },
+  {
+   "id": "remada-baixa-unilateral",
+   "nome": "Remada baixa unilateral",
+   "grupo": "Costas",
+   "midia": "exercises/remada-baixa-unilateral.webp"
+  },
+  {
+   "id": "remada-curvada-barra",
+   "nome": "Remada curvada com barra",
+   "grupo": "Costas",
+   "midia": "exercises/remada-curvada-barra.webp"
+  },
+  {
+   "id": "remada-curvada-supinada",
+   "nome": "Remada curvada supinada",
+   "grupo": "Costas",
+   "midia": "exercises/remada-curvada-supinada.webp"
+  },
+  {
+   "id": "remada-curvada-halteres",
+   "nome": "Remada curvada com halteres",
+   "grupo": "Costas",
+   "midia": "exercises/remada-curvada-halteres.webp"
+  },
+  {
+   "id": "remada-unilateral-halter",
+   "nome": "Remada unilateral com halter (serrote)",
+   "grupo": "Costas",
+   "midia": "exercises/remada-unilateral-halter.webp"
+  },
+  {
+   "id": "remada-cavalinho",
+   "nome": "Remada cavalinho (T-bar)",
+   "grupo": "Costas",
+   "midia": "exercises/remada-cavalinho.webp"
+  },
+  {
+   "id": "remada-cavalinho-apoiado",
+   "nome": "Remada cavalinho com apoio",
+   "grupo": "Costas",
+   "midia": "exercises/remada-cavalinho-apoiado.webp"
+  },
+  {
+   "id": "remada-inclinada-halteres",
+   "nome": "Remada no banco inclinado",
+   "grupo": "Costas",
+   "midia": "exercises/remada-inclinada-halteres.webp"
+  },
+  {
+   "id": "remada-alta-maquina",
+   "nome": "Remada alta na máquina",
+   "grupo": "Costas",
+   "midia": "exercises/remada-alta-maquina.webp"
+  },
+  {
+   "id": "remada-maquina",
+   "nome": "Remada na máquina",
+   "grupo": "Costas",
+   "midia": "exercises/remada-maquina.webp"
+  },
+  {
+   "id": "remada-curvada-smith",
+   "nome": "Remada curvada no Smith",
+   "grupo": "Costas",
+   "midia": "exercises/remada-curvada-smith.webp"
+  },
+  {
+   "id": "levantamento-terra",
+   "nome": "Levantamento terra",
+   "grupo": "Costas",
+   "midia": "exercises/levantamento-terra.webp"
+  },
+  {
+   "id": "terra-parcial",
+   "nome": "Levantamento terra parcial (rack pull)",
+   "grupo": "Costas",
+   "midia": "exercises/terra-parcial.webp"
+  },
+  {
+   "id": "hiperextensao-lombar",
+   "nome": "Hiperextensão lombar",
+   "grupo": "Costas",
+   "midia": "exercises/hiperextensao-lombar.webp"
+  },
+  {
+   "id": "encolhimento-barra",
+   "nome": "Encolhimento com barra",
+   "grupo": "Costas",
+   "midia": "exercises/encolhimento-barra.webp"
+  },
+  {
+   "id": "encolhimento-halteres",
+   "nome": "Encolhimento com halteres",
+   "grupo": "Costas",
+   "midia": "exercises/encolhimento-halteres.webp"
+  },
+  {
+   "id": "encolhimento-cabo",
+   "nome": "Encolhimento no cabo",
+   "grupo": "Costas",
+   "midia": "exercises/encolhimento-cabo.webp"
+  },
+  {
+   "id": "desenvolvimento-halteres",
+   "nome": "Desenvolvimento com halteres",
+   "grupo": "Ombros",
+   "midia": "exercises/desenvolvimento-halteres.webp"
+  },
+  {
+   "id": "desenvolvimento-barra",
+   "nome": "Desenvolvimento com barra sentado",
+   "grupo": "Ombros",
+   "midia": "exercises/desenvolvimento-barra.webp"
+  },
+  {
+   "id": "desenvolvimento-militar",
+   "nome": "Desenvolvimento militar em pé",
+   "grupo": "Ombros",
+   "midia": "exercises/desenvolvimento-militar.webp"
+  },
+  {
+   "id": "desenvolvimento-maquina",
+   "nome": "Desenvolvimento na máquina",
+   "grupo": "Ombros",
+   "midia": "exercises/desenvolvimento-maquina.webp"
+  },
+  {
+   "id": "desenvolvimento-smith",
+   "nome": "Desenvolvimento no Smith",
+   "grupo": "Ombros",
+   "midia": "exercises/desenvolvimento-smith.webp"
+  },
+  {
+   "id": "desenvolvimento-arnold",
+   "nome": "Desenvolvimento Arnold",
+   "grupo": "Ombros",
+   "midia": "exercises/desenvolvimento-arnold.webp"
+  },
+  {
+   "id": "desenvolvimento-cabo",
+   "nome": "Desenvolvimento no cabo",
+   "grupo": "Ombros",
+   "midia": "exercises/desenvolvimento-cabo.webp"
+  },
+  {
+   "id": "elevacao-lateral",
+   "nome": "Elevação lateral com halteres",
+   "grupo": "Ombros",
+   "midia": "exercises/elevacao-lateral.webp"
+  },
+  {
+   "id": "elevacao-lateral-sentado",
+   "nome": "Elevação lateral sentado",
+   "grupo": "Ombros",
+   "midia": "exercises/elevacao-lateral-sentado.webp"
+  },
+  {
+   "id": "elevacao-lateral-cabo",
+   "nome": "Elevação lateral no cabo",
+   "grupo": "Ombros",
+   "midia": "exercises/elevacao-lateral-cabo.webp"
+  },
+  {
+   "id": "elevacao-lateral-unilateral",
+   "nome": "Elevação lateral unilateral",
+   "grupo": "Ombros",
+   "midia": "exercises/elevacao-lateral-unilateral.webp"
+  },
+  {
+   "id": "elevacao-frontal-halteres",
+   "nome": "Elevação frontal com halteres",
+   "grupo": "Ombros",
+   "midia": "exercises/elevacao-frontal-halteres.webp"
+  },
+  {
+   "id": "elevacao-frontal-cabo",
+   "nome": "Elevação frontal no cabo",
+   "grupo": "Ombros",
+   "midia": "exercises/elevacao-frontal-cabo.webp"
+  },
+  {
+   "id": "elevacao-frontal-barra",
+   "nome": "Elevação frontal com barra",
+   "grupo": "Ombros",
+   "midia": "exercises/elevacao-frontal-barra.webp"
+  },
+  {
+   "id": "crucifixo-inverso",
+   "nome": "Crucifixo inverso com halteres",
+   "grupo": "Ombros",
+   "midia": "exercises/crucifixo-inverso.webp"
+  },
+  {
+   "id": "crucifixo-inverso-maquina",
+   "nome": "Crucifixo inverso na máquina",
+   "grupo": "Ombros",
+   "midia": "exercises/crucifixo-inverso-maquina.webp"
+  },
+  {
+   "id": "crucifixo-inverso-cabo",
+   "nome": "Crucifixo inverso no cabo",
+   "grupo": "Ombros",
+   "midia": "exercises/crucifixo-inverso-cabo.webp"
+  },
+  {
+   "id": "elevacao-posterior-sentado",
+   "nome": "Elevação posterior sentado",
+   "grupo": "Ombros",
+   "midia": "exercises/elevacao-posterior-sentado.webp"
+  },
+  {
+   "id": "face-pull",
+   "nome": "Face pull",
+   "grupo": "Ombros",
+   "midia": "exercises/face-pull.webp"
+  },
+  {
+   "id": "remada-alta-barra",
+   "nome": "Remada alta com barra",
+   "grupo": "Ombros",
+   "midia": "exercises/remada-alta-barra.webp"
+  },
+  {
+   "id": "remada-alta-halteres",
+   "nome": "Remada alta com halteres",
+   "grupo": "Ombros",
+   "midia": "exercises/remada-alta-halteres.webp"
+  },
+  {
+   "id": "remada-alta-cabo",
+   "nome": "Remada alta no cabo",
+   "grupo": "Ombros",
+   "midia": "exercises/remada-alta-cabo.webp"
+  },
+  {
+   "id": "rotacao-externa-cabo",
+   "nome": "Rotação externa no cabo",
+   "grupo": "Ombros",
+   "midia": "exercises/rotacao-externa-cabo.webp"
+  },
+  {
+   "id": "rosca-direta-barra",
+   "nome": "Rosca direta com barra",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-direta-barra.webp"
+  },
+  {
+   "id": "rosca-direta-w",
+   "nome": "Rosca direta com barra W",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-direta-w.webp"
+  },
+  {
+   "id": "rosca-direta-halteres",
+   "nome": "Rosca direta com halteres",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-direta-halteres.webp"
+  },
+  {
+   "id": "rosca-alternada",
+   "nome": "Rosca alternada",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-alternada.webp"
+  },
+  {
+   "id": "rosca-martelo",
+   "nome": "Rosca martelo",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-martelo.webp"
+  },
+  {
+   "id": "rosca-martelo-cruzada",
+   "nome": "Rosca martelo cruzada",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-martelo-cruzada.webp"
+  },
+  {
+   "id": "rosca-martelo-corda",
+   "nome": "Rosca martelo na corda",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-martelo-corda.webp"
+  },
+  {
+   "id": "rosca-concentrada",
+   "nome": "Rosca concentrada",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-concentrada.webp"
+  },
+  {
+   "id": "rosca-scott-barra",
+   "nome": "Rosca Scott com barra",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-scott-barra.webp"
+  },
+  {
+   "id": "rosca-scott-halter",
+   "nome": "Rosca Scott com halter",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-scott-halter.webp"
+  },
+  {
+   "id": "rosca-scott-maquina",
+   "nome": "Rosca Scott na máquina",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-scott-maquina.webp"
+  },
+  {
+   "id": "rosca-inclinada",
+   "nome": "Rosca no banco inclinado",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-inclinada.webp"
+  },
+  {
+   "id": "rosca-direta-cabo",
+   "nome": "Rosca direta no cabo",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-direta-cabo.webp"
+  },
+  {
+   "id": "rosca-polia-alta",
+   "nome": "Rosca na polia alta",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-polia-alta.webp"
+  },
+  {
+   "id": "rosca-spider",
+   "nome": "Rosca spider",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-spider.webp"
+  },
+  {
+   "id": "rosca-inversa",
+   "nome": "Rosca inversa com barra",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-inversa.webp"
+  },
+  {
+   "id": "rosca-zottman",
+   "nome": "Rosca Zottman",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-zottman.webp"
+  },
+  {
+   "id": "rosca-maquina",
+   "nome": "Rosca na máquina",
+   "grupo": "Bíceps",
+   "midia": "exercises/rosca-maquina.webp"
+  },
+  {
+   "id": "triceps-pulley",
+   "nome": "Tríceps pulley com barra",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-pulley.webp"
+  },
+  {
+   "id": "triceps-corda",
+   "nome": "Tríceps na corda",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-corda.webp"
+  },
+  {
+   "id": "triceps-pulley-v",
+   "nome": "Tríceps pulley com barra V",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-pulley-v.webp"
+  },
+  {
+   "id": "triceps-pulley-inverso",
+   "nome": "Tríceps pulley inverso",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-pulley-inverso.webp"
+  },
+  {
+   "id": "triceps-frances-corda",
+   "nome": "Tríceps francês na corda",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-frances-corda.webp"
+  },
+  {
+   "id": "triceps-frances-halter",
+   "nome": "Tríceps francês com halter",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-frances-halter.webp"
+  },
+  {
+   "id": "triceps-frances-unilateral",
+   "nome": "Tríceps francês unilateral",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-frances-unilateral.webp"
+  },
+  {
+   "id": "triceps-testa-w",
+   "nome": "Tríceps testa com barra W",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-testa-w.webp"
+  },
+  {
+   "id": "triceps-testa-halteres",
+   "nome": "Tríceps testa com halteres",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-testa-halteres.webp"
+  },
+  {
+   "id": "triceps-coice",
+   "nome": "Tríceps coice",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-coice.webp"
+  },
+  {
+   "id": "supino-fechado",
+   "nome": "Supino fechado",
+   "grupo": "Tríceps",
+   "midia": "exercises/supino-fechado.webp"
+  },
+  {
+   "id": "mergulho-paralelas",
+   "nome": "Mergulho nas paralelas",
+   "grupo": "Tríceps",
+   "midia": "exercises/mergulho-paralelas.webp"
+  },
+  {
+   "id": "mergulho-banco",
+   "nome": "Mergulho no banco",
+   "grupo": "Tríceps",
+   "midia": "exercises/mergulho-banco.webp"
+  },
+  {
+   "id": "mergulho-maquina",
+   "nome": "Mergulho na máquina",
+   "grupo": "Tríceps",
+   "midia": "exercises/mergulho-maquina.webp"
+  },
+  {
+   "id": "triceps-maquina",
+   "nome": "Tríceps na máquina",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-maquina.webp"
+  },
+  {
+   "id": "triceps-unilateral-cabo",
+   "nome": "Tríceps unilateral no cabo",
+   "grupo": "Tríceps",
+   "midia": "exercises/triceps-unilateral-cabo.webp"
+  },
+  {
+   "id": "flexao-fechada",
+   "nome": "Flexão de braço fechada",
+   "grupo": "Tríceps",
+   "midia": "exercises/flexao-fechada.webp"
+  },
+  {
+   "id": "rosca-punho-barra",
+   "nome": "Rosca de punho com barra",
+   "grupo": "Antebraço",
+   "midia": "exercises/rosca-punho-barra.webp"
+  },
+  {
+   "id": "rosca-punho-inversa-barra",
+   "nome": "Rosca de punho inversa com barra",
+   "grupo": "Antebraço",
+   "midia": "exercises/rosca-punho-inversa-barra.webp"
+  },
+  {
+   "id": "rosca-punho-halteres",
+   "nome": "Rosca de punho com halteres",
+   "grupo": "Antebraço",
+   "midia": "exercises/rosca-punho-halteres.webp"
+  },
+  {
+   "id": "rosca-punho-inversa-halteres",
+   "nome": "Rosca de punho inversa com halteres",
+   "grupo": "Antebraço",
+   "midia": "exercises/rosca-punho-inversa-halteres.webp"
+  },
+  {
+   "id": "rosca-punho-cabo",
+   "nome": "Rosca de punho no cabo",
+   "grupo": "Antebraço",
+   "midia": "exercises/rosca-punho-cabo.webp"
+  },
+  {
+   "id": "rotacao-punho-barra",
+   "nome": "Rotação de punho com barra",
+   "grupo": "Antebraço",
+   "midia": "exercises/rotacao-punho-barra.webp"
+  },
+  {
+   "id": "agachamento-livre",
+   "nome": "Agachamento livre",
+   "grupo": "Quadríceps",
+   "midia": "exercises/agachamento-livre.webp"
+  },
+  {
+   "id": "agachamento-profundo",
+   "nome": "Agachamento profundo",
+   "grupo": "Quadríceps",
+   "midia": "exercises/agachamento-profundo.webp"
+  },
+  {
+   "id": "agachamento-frontal",
+   "nome": "Agachamento frontal",
+   "grupo": "Quadríceps",
+   "midia": "exercises/agachamento-frontal.webp"
+  },
+  {
+   "id": "agachamento-smith",
+   "nome": "Agachamento no Smith",
+   "grupo": "Quadríceps",
+   "midia": "exercises/agachamento-smith.webp"
+  },
+  {
+   "id": "agachamento-halteres",
+   "nome": "Agachamento com halteres",
+   "grupo": "Quadríceps",
+   "midia": "exercises/agachamento-halteres.webp"
+  },
+  {
+   "id": "agachamento-sumo-halter",
+   "nome": "Agachamento sumô com halter",
+   "grupo": "Quadríceps",
+   "midia": "exercises/agachamento-sumo-halter.webp"
+  },
+  {
+   "id": "agachamento-livre-corpo",
+   "nome": "Agachamento com peso do corpo",
+   "grupo": "Quadríceps",
+   "midia": "exercises/agachamento-livre-corpo.webp"
+  },
+  {
+   "id": "hack-maquina",
+   "nome": "Hack na máquina",
+   "grupo": "Quadríceps",
+   "midia": "exercises/hack-maquina.webp"
+  },
+  {
+   "id": "hack-barra",
+   "nome": "Hack com barra",
+   "grupo": "Quadríceps",
+   "midia": "exercises/hack-barra.webp"
+  },
+  {
+   "id": "leg-press",
+   "nome": "Leg press",
+   "grupo": "Quadríceps",
+   "midia": "exercises/leg-press.webp"
+  },
+  {
+   "id": "leg-press-fechado",
+   "nome": "Leg press com pés fechados",
+   "grupo": "Quadríceps",
+   "midia": "exercises/leg-press-fechado.webp"
+  },
+  {
+   "id": "cadeira-extensora",
+   "nome": "Cadeira extensora",
+   "grupo": "Quadríceps",
+   "midia": "exercises/cadeira-extensora.webp"
+  },
+  {
+   "id": "cadeira-extensora-unilateral",
+   "nome": "Cadeira extensora unilateral",
+   "grupo": "Quadríceps",
+   "midia": "exercises/cadeira-extensora-unilateral.webp"
+  },
+  {
+   "id": "afundo-halteres",
+   "nome": "Afundo com halteres",
+   "grupo": "Quadríceps",
+   "midia": "exercises/afundo-halteres.webp"
+  },
+  {
+   "id": "afundo-barra",
+   "nome": "Afundo com barra",
+   "grupo": "Quadríceps",
+   "midia": "exercises/afundo-barra.webp"
+  },
+  {
+   "id": "passada-barra",
+   "nome": "Passada com barra",
+   "grupo": "Quadríceps",
+   "midia": "exercises/passada-barra.webp"
+  },
+  {
+   "id": "afundo-reverso",
+   "nome": "Afundo reverso com halteres",
+   "grupo": "Quadríceps",
+   "midia": "exercises/afundo-reverso.webp"
+  },
+  {
+   "id": "agachamento-bulgaro",
+   "nome": "Agachamento búlgaro",
+   "grupo": "Quadríceps",
+   "midia": "exercises/agachamento-bulgaro.webp"
+  },
+  {
+   "id": "subida-banco-halteres",
+   "nome": "Subida no banco com halteres",
+   "grupo": "Quadríceps",
+   "midia": "exercises/subida-banco-halteres.webp"
+  },
+  {
+   "id": "agachamento-sissy",
+   "nome": "Agachamento sissy",
+   "grupo": "Quadríceps",
+   "midia": "exercises/agachamento-sissy.webp"
+  },
+  {
+   "id": "cadeira-adutora",
+   "nome": "Cadeira adutora",
+   "grupo": "Quadríceps",
+   "midia": "exercises/cadeira-adutora.webp"
+  },
+  {
+   "id": "mesa-flexora",
+   "nome": "Mesa flexora",
+   "grupo": "Posterior",
+   "midia": "exercises/mesa-flexora.webp"
+  },
+  {
+   "id": "cadeira-flexora",
+   "nome": "Cadeira flexora",
+   "grupo": "Posterior",
+   "midia": "exercises/cadeira-flexora.webp"
+  },
+  {
+   "id": "flexora-em-pe",
+   "nome": "Flexora em pé",
+   "grupo": "Posterior",
+   "midia": "exercises/flexora-em-pe.webp"
+  },
+  {
+   "id": "terra-romeno",
+   "nome": "Levantamento terra romeno",
+   "grupo": "Posterior",
+   "midia": "exercises/terra-romeno.webp"
+  },
+  {
+   "id": "stiff-barra",
+   "nome": "Stiff com barra",
+   "grupo": "Posterior",
+   "midia": "exercises/stiff-barra.webp"
+  },
+  {
+   "id": "stiff-halteres",
+   "nome": "Stiff com halteres",
+   "grupo": "Posterior",
+   "midia": "exercises/stiff-halteres.webp"
+  },
+  {
+   "id": "stiff-smith",
+   "nome": "Stiff no Smith",
+   "grupo": "Posterior",
+   "midia": "exercises/stiff-smith.webp"
+  },
+  {
+   "id": "terra-sumo",
+   "nome": "Levantamento terra sumô",
+   "grupo": "Posterior",
+   "midia": "exercises/terra-sumo.webp"
+  },
+  {
+   "id": "bom-dia",
+   "nome": "Bom dia (good morning)",
+   "grupo": "Posterior",
+   "midia": "exercises/bom-dia.webp"
+  },
+  {
+   "id": "glute-ham-raise",
+   "nome": "Glute ham raise",
+   "grupo": "Posterior",
+   "midia": "exercises/glute-ham-raise.webp"
+  },
+  {
+   "id": "elevacao-pelvica",
+   "nome": "Elevação pélvica com barra",
+   "grupo": "Glúteos",
+   "midia": "exercises/elevacao-pelvica.webp"
+  },
+  {
+   "id": "ponte-gluteo-barra",
+   "nome": "Ponte de glúteo com barra",
+   "grupo": "Glúteos",
+   "midia": "exercises/ponte-gluteo-barra.webp"
+  },
+  {
+   "id": "ponte-gluteo-unilateral",
+   "nome": "Ponte de glúteo unilateral",
+   "grupo": "Glúteos",
+   "midia": "exercises/ponte-gluteo-unilateral.webp"
+  },
+  {
+   "id": "ponte-gluteo",
+   "nome": "Ponte de glúteo",
+   "grupo": "Glúteos",
+   "midia": "exercises/ponte-gluteo.webp"
+  },
+  {
+   "id": "coice-gluteo",
+   "nome": "Coice de glúteo (quatro apoios)",
+   "grupo": "Glúteos",
+   "midia": "exercises/coice-gluteo.webp"
+  },
+  {
+   "id": "coice-gluteo-cabo",
+   "nome": "Coice de glúteo no cabo",
+   "grupo": "Glúteos",
+   "midia": "exercises/coice-gluteo-cabo.webp"
+  },
+  {
+   "id": "pull-through-cabo",
+   "nome": "Pull through no cabo",
+   "grupo": "Glúteos",
+   "midia": "exercises/pull-through-cabo.webp"
+  },
+  {
+   "id": "cadeira-abdutora",
+   "nome": "Cadeira abdutora",
+   "grupo": "Glúteos",
+   "midia": "exercises/cadeira-abdutora.webp"
+  },
+  {
+   "id": "panturrilha-em-pe-maquina",
+   "nome": "Panturrilha em pé na máquina",
+   "grupo": "Panturrilha",
+   "midia": "exercises/panturrilha-em-pe-maquina.webp"
+  },
+  {
+   "id": "panturrilha-sentado",
+   "nome": "Panturrilha sentado",
+   "grupo": "Panturrilha",
+   "midia": "exercises/panturrilha-sentado.webp"
+  },
+  {
+   "id": "panturrilha-leg-press",
+   "nome": "Panturrilha no leg press",
+   "grupo": "Panturrilha",
+   "midia": "exercises/panturrilha-leg-press.webp"
+  },
+  {
+   "id": "panturrilha-smith",
+   "nome": "Panturrilha no Smith",
+   "grupo": "Panturrilha",
+   "midia": "exercises/panturrilha-smith.webp"
+  },
+  {
+   "id": "panturrilha-halteres",
+   "nome": "Panturrilha em pé com halteres",
+   "grupo": "Panturrilha",
+   "midia": "exercises/panturrilha-halteres.webp"
+  },
+  {
+   "id": "panturrilha-barra",
+   "nome": "Panturrilha em pé com barra",
+   "grupo": "Panturrilha",
+   "midia": "exercises/panturrilha-barra.webp"
+  },
+  {
+   "id": "abdominal-supra",
+   "nome": "Abdominal supra",
+   "grupo": "Abdômen",
+   "midia": "exercises/abdominal-supra.webp"
+  },
+  {
+   "id": "abdominal-completo",
+   "nome": "Abdominal completo",
+   "grupo": "Abdômen",
+   "midia": "exercises/abdominal-completo.webp"
+  },
+  {
+   "id": "abdominal-infra",
+   "nome": "Abdominal infra",
+   "grupo": "Abdômen",
+   "midia": "exercises/abdominal-infra.webp"
+  },
+  {
+   "id": "abdominal-cabo",
+   "nome": "Abdominal no cabo (ajoelhado)",
+   "grupo": "Abdômen",
+   "midia": "exercises/abdominal-cabo.webp"
+  },
+  {
+   "id": "abdominal-maquina",
+   "nome": "Abdominal na máquina",
+   "grupo": "Abdômen",
+   "midia": "exercises/abdominal-maquina.webp"
+  },
+  {
+   "id": "abdominal-declinado",
+   "nome": "Abdominal declinado",
+   "grupo": "Abdômen",
+   "midia": "exercises/abdominal-declinado.webp"
+  },
+  {
+   "id": "abdominal-obliquo",
+   "nome": "Abdominal oblíquo",
+   "grupo": "Abdômen",
+   "midia": "exercises/abdominal-obliquo.webp"
+  },
+  {
+   "id": "elevacao-pernas-suspenso",
+   "nome": "Elevação de pernas suspenso",
+   "grupo": "Abdômen",
+   "midia": "exercises/elevacao-pernas-suspenso.webp"
+  },
+  {
+   "id": "elevacao-pernas-banco",
+   "nome": "Elevação de pernas no banco",
+   "grupo": "Abdômen",
+   "midia": "exercises/elevacao-pernas-banco.webp"
+  },
+  {
+   "id": "prancha",
+   "nome": "Prancha",
+   "grupo": "Abdômen",
+   "midia": "exercises/prancha.webp"
+  },
+  {
+   "id": "prancha-lateral",
+   "nome": "Prancha lateral",
+   "grupo": "Abdômen",
+   "midia": "exercises/prancha-lateral.webp"
+  },
+  {
+   "id": "giro-russo",
+   "nome": "Giro russo",
+   "grupo": "Abdômen",
+   "midia": "exercises/giro-russo.webp"
+  },
+  {
+   "id": "roda-abdominal",
+   "nome": "Rollout com barra (ajoelhado)",
+   "grupo": "Abdômen",
+   "midia": "exercises/roda-abdominal.webp"
+  },
+  {
+   "id": "flexao-lateral-halter",
+   "nome": "Flexão lateral com halter",
+   "grupo": "Abdômen",
+   "midia": "exercises/flexao-lateral-halter.webp"
+  },
+  {
+   "id": "lenhador-cabo",
+   "nome": "Lenhador no cabo",
+   "grupo": "Abdômen",
+   "midia": "exercises/lenhador-cabo.webp"
+  },
+  {
+   "id": "pallof-press",
+   "nome": "Pallof press",
+   "grupo": "Abdômen",
+   "midia": "exercises/pallof-press.webp"
+  },
+  {
+   "id": "dead-bug",
+   "nome": "Dead bug",
+   "grupo": "Abdômen",
+   "midia": "exercises/dead-bug.webp"
+  },
+  {
+   "id": "elevacao-quadril",
+   "nome": "Elevação de quadril deitado",
+   "grupo": "Abdômen",
+   "midia": "exercises/elevacao-quadril.webp"
+  }
+ ]
+}
