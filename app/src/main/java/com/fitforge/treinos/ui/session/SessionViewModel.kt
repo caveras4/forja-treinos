@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fitforge.treinos.data.local.WorkoutEntity
 import com.fitforge.treinos.data.local.WorkoutExerciseDetail
+import com.fitforge.treinos.data.repository.SessionRepository
 import com.fitforge.treinos.data.repository.WorkoutRepository
 import com.fitforge.treinos.domain.WeightFormat
 import com.fitforge.treinos.domain.WeightInput
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -22,48 +24,63 @@ data class SessionUiState(
     val loading: Boolean = true,
     val workout: WorkoutEntity? = null,
     val items: List<WorkoutExerciseDetail> = emptyList(),
-    val doneIds: Set<Long> = emptySet(),
+    /** Ids dos exercícios (ex.: "leg-press") marcados como feitos. */
+    val doneExerciseIds: Set<String> = emptySet(),
     val expandedId: Long? = null,
-    val weightDialog: WeightDialogState? = null
+    val weightDialog: WeightDialogState? = null,
+    val showFinishDialog: Boolean = false,
+    val finished: Boolean = false
 ) {
-    val doneCount: Int get() = items.count { it.item.id in doneIds }
+    fun isDone(detail: WorkoutExerciseDetail): Boolean = detail.exercise.id in doneExerciseIds
+    val doneCount: Int get() = items.count { isDone(it) }
     val allDone: Boolean get() = items.isNotEmpty() && doneCount == items.size
 }
 
 private data class LocalState(
-    val doneIds: Set<Long> = emptySet(),
     val expandedId: Long? = null,
-    val weightDialog: WeightDialogState? = null
+    val weightDialog: WeightDialogState? = null,
+    val showFinishDialog: Boolean = false,
+    val finished: Boolean = false
 )
 
 /**
- * Treino em andamento. "Feito" vale só para esta sessão (sem histórico);
- * a carga alterada substitui a anterior e é salva na hora.
+ * Treino em andamento. O progresso (exercícios feitos) fica no [SessionRepository], então
+ * voltar para a Home ou fechar o app não perde nada. A carga alterada substitui a anterior.
  */
 class SessionViewModel(
-    private val savedStateHandle: SavedStateHandle,
-    private val repository: WorkoutRepository
+    savedStateHandle: SavedStateHandle,
+    private val repository: WorkoutRepository,
+    private val sessionRepository: SessionRepository
 ) : ViewModel() {
 
     private val workoutId: Long = checkNotNull(savedStateHandle[ARG_WORKOUT_ID])
+    private val local = MutableStateFlow(LocalState())
 
-    // Os itens marcados sobrevivem a rotação de tela e ao processo ser recriado.
-    private val local = MutableStateFlow(
-        LocalState(doneIds = savedStateHandle.get<LongArray>(KEY_DONE)?.toSet().orEmpty())
-    )
+    init {
+        viewModelScope.launch {
+            // A Home já resolveu o conflito; aqui só garantimos que ESTE é o treino ativo.
+            if (sessionRepository.current()?.workoutId != workoutId) sessionRepository.start(workoutId)
+            // Limpa marcações de exercícios que saíram do treino desde a última vez.
+            val ids = repository.observeExercises(workoutId).first().map { it.exercise.id }
+            sessionRepository.retain(workoutId, ids)
+        }
+    }
 
     val uiState: StateFlow<SessionUiState> = combine(
         repository.observeWorkout(workoutId),
         repository.observeExercises(workoutId),
+        sessionRepository.active,
         local
-    ) { workout, items, local ->
+    ) { workout, items, active, local ->
         SessionUiState(
             loading = false,
             workout = workout,
             items = items,
-            doneIds = local.doneIds,
+            doneExerciseIds = active?.takeIf { it.workoutId == workoutId }?.doneExerciseIds.orEmpty(),
             expandedId = local.expandedId,
-            weightDialog = local.weightDialog
+            weightDialog = local.weightDialog,
+            showFinishDialog = local.showFinishDialog,
+            finished = local.finished
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SessionUiState())
 
@@ -71,12 +88,8 @@ class SessionViewModel(
         it.copy(expandedId = if (it.expandedId == itemId) null else itemId)
     }
 
-    fun onToggleDone(itemId: Long) {
-        local.update {
-            val done = if (itemId in it.doneIds) it.doneIds - itemId else it.doneIds + itemId
-            it.copy(doneIds = done)
-        }
-        savedStateHandle[KEY_DONE] = local.value.doneIds.toLongArray()
+    fun onToggleDone(detail: WorkoutExerciseDetail) {
+        viewModelScope.launch { sessionRepository.toggleDone(workoutId, detail.exercise.id) }
     }
 
     fun onStepWeight(detail: WorkoutExerciseDetail, delta: Double) {
@@ -115,14 +128,29 @@ class SessionViewModel(
 
     fun onDismissWeight() = local.update { it.copy(weightDialog = null) }
 
+    /** Desmarca tudo, mas o treino continua em andamento. */
     fun onReset() {
-        local.update { it.copy(doneIds = emptySet(), expandedId = null) }
-        savedStateHandle[KEY_DONE] = LongArray(0)
+        local.update { it.copy(expandedId = null) }
+        viewModelScope.launch { sessionRepository.clearDone(workoutId) }
+    }
+
+    /** Botão Finalizar: com tudo feito encerra direto; senão pede confirmação. */
+    fun onFinishClick() {
+        if (uiState.value.allDone) finish() else local.update { it.copy(showFinishDialog = true) }
+    }
+
+    fun onDismissFinish() = local.update { it.copy(showFinishDialog = false) }
+
+    fun finish() {
+        local.update { it.copy(showFinishDialog = false) }
+        viewModelScope.launch {
+            sessionRepository.finishIf(workoutId)
+            local.update { it.copy(finished = true) }
+        }
     }
 
     companion object {
         const val ARG_WORKOUT_ID = "workoutId"
-        private const val KEY_DONE = "done_ids"
         const val WEIGHT_STEP = 1.0
     }
 }

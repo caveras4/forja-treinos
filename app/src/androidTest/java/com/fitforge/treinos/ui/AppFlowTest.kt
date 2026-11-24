@@ -43,7 +43,19 @@ class AppFlowTest {
     @Before
     fun waitForApp() {
         rule.waitUntil(15_000) { container.ready.value }
+        // Cada teste começa sem treino em andamento (o estado fica salvo entre execuções).
+        runBlocking { container.sessionRepository.finish() }
         rule.waitUntilAtLeastOneExists(hasTestTag("fab_criar"), 10_000)
+    }
+
+    private fun backToHome() {
+        rule.onNodeWithContentDescription("Voltar").performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("fab_criar"), 5_000)
+    }
+
+    private fun openSession(name: String, firstExerciseTag: String) {
+        scrollHomeTo(name).performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag(firstExerciseTag), 5_000)
     }
 
     private fun createWorkout(name: String, vararg ids: String): Long = runBlocking {
@@ -157,7 +169,7 @@ class AppFlowTest {
         rule.waitUntilAtLeastOneExists(hasText("86 kg"), 5_000)
 
         rule.onNodeWithContentDescription("Marcar Leg press como feito").performClick()
-        rule.onNodeWithText("1 de 2 feitos").assertExists()
+        rule.onNodeWithText("1 de 2 feitos", substring = true).assertExists()
         rule.onNodeWithContentDescription("Marcar Prancha como feito").performClick()
         rule.onNodeWithText("Treino concluído!").assertExists()
 
@@ -218,5 +230,123 @@ class AppFlowTest {
 
         val saved = runBlocking { container.workoutRepository.loadDraft(id)!! }
         assertEquals(2, saved.items.size)
+    }
+
+    // ---------- Treino em andamento ----------
+
+    @Test
+    fun treinoEmAndamento_sobreviveAVoltarParaHomeEFicaDestacado() {
+        val name = "Andamento $suffix"
+        createWorkout(name, "leg-press", "prancha", "face-pull")
+        openSession(name, "sessao-leg-press")
+        rule.onNodeWithContentDescription("Marcar Leg press como feito").performClick()
+        rule.onNodeWithContentDescription("Marcar Prancha como feito").performClick()
+        rule.waitUntilAtLeastOneExists(hasText("2 de 3 feitos", substring = true), 5_000)
+
+        backToHome()
+        // Faixa no topo + card destacado.
+        rule.onNodeWithTag("faixa_em_andamento").assertIsDisplayed()
+        rule.onNode(hasText("$name · 2 de 3")).assertExists()
+        rule.onNodeWithText("EM ANDAMENTO").assertExists()
+        rule.onNodeWithContentDescription("Continuar $name").assertExists()
+
+        // Voltar pela faixa: as marcações continuam lá.
+        rule.onNodeWithTag("faixa_em_andamento").performClick()
+        rule.waitUntilAtLeastOneExists(hasText("2 de 3 feitos", substring = true), 5_000)
+        rule.onNodeWithContentDescription("Desmarcar Leg press").assertExists()
+        rule.onNodeWithContentDescription("Desmarcar Prancha").assertExists()
+        rule.onNodeWithContentDescription("Marcar Face pull como feito").assertExists()
+    }
+
+    @Test
+    fun treinoEmAndamento_sobreviveARecriarATela() {
+        val name = "Recriar $suffix"
+        createWorkout(name, "leg-press", "prancha")
+        openSession(name, "sessao-leg-press")
+        rule.onNodeWithContentDescription("Marcar Leg press como feito").performClick()
+        rule.waitUntilAtLeastOneExists(hasText("1 de 2 feitos", substring = true), 5_000)
+
+        rule.activityRule.scenario.recreate() // ex.: girar a tela / trocar de tema
+        rule.waitUntil(10_000) {
+            rule.onAllNodes(hasText("1 de 2 feitos", substring = true)).fetchSemanticsNodes().isNotEmpty() ||
+                rule.onAllNodes(hasTestTag("faixa_em_andamento")).fetchSemanticsNodes().isNotEmpty()
+        }
+        val session = runBlocking { container.sessionRepository.current() }!!
+        assertEquals(setOf("leg-press"), session.doneExerciseIds)
+    }
+
+    @Test
+    fun soUmTreinoPorVez_perguntaEPodeContinuarOAtual() {
+        val first = "Primeiro $suffix"
+        val second = "Segundo $suffix"
+        val firstId = createWorkout(first, "leg-press", "prancha")
+        createWorkout(second, "face-pull", "remada-baixa")
+        openSession(first, "sessao-leg-press")
+        rule.onNodeWithContentDescription("Marcar Leg press como feito").performClick()
+        backToHome()
+
+        scrollHomeTo(second).performClick()
+        rule.onNodeWithText("Só dá para ter um treino em andamento por vez", substring = true).assertIsDisplayed()
+        rule.onNodeWithText("Continuar $first").performClick()
+
+        // Abriu o PRIMEIRO, com o progresso intacto.
+        rule.waitUntilAtLeastOneExists(hasTestTag("sessao-leg-press"), 5_000)
+        rule.onNodeWithContentDescription("Desmarcar Leg press").assertExists()
+        assertEquals(firstId, runBlocking { container.sessionRepository.current() }!!.workoutId)
+    }
+
+    @Test
+    fun soUmTreinoPorVez_encerrarEIniciarOutro() {
+        val first = "Velho $suffix"
+        val second = "Novo $suffix"
+        createWorkout(first, "leg-press", "prancha")
+        val secondId = createWorkout(second, "face-pull", "remada-baixa")
+        openSession(first, "sessao-leg-press")
+        rule.onNodeWithContentDescription("Marcar Leg press como feito").performClick()
+        backToHome()
+
+        scrollHomeTo(second).performClick()
+        rule.onNodeWithText("Encerrar e iniciar $second").performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("sessao-face-pull"), 5_000)
+        rule.onNodeWithText("0 de 2 feitos", substring = true).assertExists()
+        backToHome()
+
+        rule.onNode(hasText("$second · 0 de 2")).assertExists()
+        rule.onNode(hasText("$first · 1 de 2")).assertDoesNotExist()
+        assertEquals(secondId, runBlocking { container.sessionRepository.current() }!!.workoutId)
+    }
+
+    @Test
+    fun finalizarComPendentesPedeConfirmacaoETiraODestaque() {
+        val name = "Finalizar $suffix"
+        createWorkout(name, "leg-press", "prancha")
+        openSession(name, "sessao-leg-press")
+        rule.onNodeWithContentDescription("Marcar Leg press como feito").performClick()
+
+        rule.onNodeWithTag("finalizar").performClick()
+        rule.onNodeWithText("Finalizar treino?").assertIsDisplayed()
+        rule.onNodeWithText("Continuar treino").performClick()
+        rule.onNodeWithText("Finalizar treino?").assertDoesNotExist()
+
+        rule.onNodeWithTag("finalizar").performClick()
+        rule.onNodeWithTag("confirmar_finalizar").performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("fab_criar"), 5_000)
+        rule.onNodeWithTag("faixa_em_andamento").assertDoesNotExist()
+        assertEquals(null, runBlocking { container.sessionRepository.current() })
+    }
+
+    @Test
+    fun excluirTreinoEmAndamentoEncerraASessao() {
+        val name = "Excluir $suffix"
+        createWorkout(name, "leg-press")
+        openSession(name, "sessao-leg-press")
+        backToHome()
+        rule.onNodeWithTag("faixa_em_andamento").assertExists()
+
+        scrollHomeTo(name).performTouchInput { longClick() }
+        rule.onNodeWithContentDescription("Excluir $name").performClick()
+        rule.onNodeWithText("Excluir").performClick()
+        rule.waitUntil(5_000) { rule.onAllNodes(hasTestTag("faixa_em_andamento")).fetchSemanticsNodes().isEmpty() }
+        assertEquals(null, runBlocking { container.sessionRepository.current() })
     }
 }

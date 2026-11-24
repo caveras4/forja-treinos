@@ -8,6 +8,7 @@ import com.fitforge.treinos.data.media.CustomMediaStorage
 import com.fitforge.treinos.data.repository.ExerciseRepository
 import com.fitforge.treinos.data.repository.LocalExerciseRepository
 import com.fitforge.treinos.data.repository.LocalWorkoutRepository
+import com.fitforge.treinos.data.repository.SessionRepository
 import com.fitforge.treinos.data.repository.SettingsRepository
 import com.fitforge.treinos.data.repository.WorkoutRepository
 import com.fitforge.treinos.domain.DraftItem
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
+private val Context.sessionDataStore by preferencesDataStore(name = "active_session")
 
 /** Injeção de dependência manual: cria cada peça uma vez e entrega para os ViewModels. */
 class AppContainer(context: Context) {
@@ -23,6 +25,7 @@ class AppContainer(context: Context) {
 
     val database: AppDatabase = AppDatabase.getInstance(appContext)
     val settingsRepository = SettingsRepository(appContext.dataStore)
+    val sessionRepository = SessionRepository(appContext.sessionDataStore)
     val mediaStorage = CustomMediaStorage(appContext)
 
     private val localWorkoutRepository = LocalWorkoutRepository(database)
