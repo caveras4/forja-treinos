@@ -1,0 +1,25 @@
+# Gradle / Android
+.gradle/
+build/
+local.properties
+*.apk
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+
+# IDE
+.idea/
+*.iml
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Ferramenta do catálogo
+tools/catalogo/.cache/
+tools/catalogo/.venv/
+__pycache__/
+
+# Protótipo web
+docs/prototipo-web/node_modules/
