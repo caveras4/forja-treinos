@@ -1044,6 +1044,12 @@
    "nome": "Elevação de quadril deitado",
    "grupo": "Abdômen",
    "midia": "exercises/elevacao-quadril.webp"
+  },
+  {
+   "id": "abdominal-infra-paralela",
+   "nome": "Abdominal infra na paralela",
+   "grupo": "Abdômen",
+   "midia": "exercises/abdominal-infra-paralela.webp"
   }
  ]
 }

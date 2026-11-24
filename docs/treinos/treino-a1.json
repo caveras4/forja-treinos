@@ -1,0 +1,41 @@
+{
+  "formato": "forja-treino",
+  "versao": 1,
+  "treino": {
+    "nome": "Treino A1 – Força",
+    "foco": "Peito, Ombros e Tríceps",
+    "cor": "emerald",
+    "exercicios": [
+      {
+        "id": "supino-reto-barra",
+        "series": 4,
+        "repeticoes": 8
+      },
+      {
+        "id": "supino-inclinado-halteres",
+        "series": 3,
+        "repeticoes": 10
+      },
+      {
+        "id": "desenvolvimento-halteres",
+        "series": 3,
+        "repeticoes": 10
+      },
+      {
+        "id": "elevacao-lateral",
+        "series": 3,
+        "repeticoes": 15
+      },
+      {
+        "id": "triceps-pulley",
+        "series": 3,
+        "repeticoes": 10
+      },
+      {
+        "id": "prancha",
+        "series": 3,
+        "repeticoes": 45
+      }
+    ]
+  }
+}

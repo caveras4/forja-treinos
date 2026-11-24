@@ -1,7 +1,7 @@
 # Forja Treinos
 
 App Android de academia **100% offline**. Não usa internet e não tem a permissão `INTERNET`.
-Você monta seus treinos a partir de um catálogo com 174 exercícios animados, registra a carga
+Você monta seus treinos a partir de um catálogo com 175 exercícios animados, registra a carga
 atual de cada um e acompanha o treino do dia.
 
 ## Funcionalidades

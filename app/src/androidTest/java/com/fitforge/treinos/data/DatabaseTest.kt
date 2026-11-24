@@ -42,10 +42,10 @@ class DatabaseTest {
     @Test
     fun catalogoSincronizaComTodosOsExercicios() = runTest {
         exercises.syncCatalog()
-        assertEquals(174, db.exerciseDao().countCatalog())
+        assertEquals(175, db.exerciseDao().countCatalog())
         // Rodar de novo não duplica.
         exercises.syncCatalog()
-        assertEquals(174, db.exerciseDao().countCatalog())
+        assertEquals(175, db.exerciseDao().countCatalog())
     }
 
     @Test
@@ -118,6 +118,6 @@ class DatabaseTest {
     fun catalogoNaoPodeSerExcluidoComoPersonalizado() = runTest {
         exercises.syncCatalog()
         exercises.deleteCustom(ExerciseEntity("leg-press", "Leg press", "Quadríceps", null, isCustom = true))
-        assertEquals(174, db.exerciseDao().countCatalog())
+        assertEquals(175, db.exerciseDao().countCatalog())
     }
 }

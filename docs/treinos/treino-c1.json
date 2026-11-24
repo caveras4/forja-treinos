@@ -1,0 +1,41 @@
+{
+  "formato": "forja-treino",
+  "versao": 1,
+  "treino": {
+    "nome": "Treino C1 – Quadríceps",
+    "foco": "Pernas, Glúteo e Abdômen",
+    "cor": "amber",
+    "exercicios": [
+      {
+        "id": "agachamento-livre",
+        "series": 4,
+        "repeticoes": 8
+      },
+      {
+        "id": "leg-press",
+        "series": 3,
+        "repeticoes": 12
+      },
+      {
+        "id": "cadeira-extensora",
+        "series": 3,
+        "repeticoes": 15
+      },
+      {
+        "id": "elevacao-pelvica",
+        "series": 3,
+        "repeticoes": 10
+      },
+      {
+        "id": "panturrilha-em-pe-maquina",
+        "series": 4,
+        "repeticoes": 15
+      },
+      {
+        "id": "abdominal-infra-paralela",
+        "series": 3,
+        "repeticoes": 12
+      }
+    ]
+  }
+}
