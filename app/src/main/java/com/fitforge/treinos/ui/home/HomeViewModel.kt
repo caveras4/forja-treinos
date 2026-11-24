@@ -7,8 +7,12 @@ import com.fitforge.treinos.data.backup.BackupManager
 import com.fitforge.treinos.data.backup.BackupResult
 import com.fitforge.treinos.data.files.TextFiles
 import com.fitforge.treinos.data.local.WorkoutEntity
+import com.fitforge.treinos.data.repository.SessionRepository
 import com.fitforge.treinos.data.repository.SettingsRepository
 import com.fitforge.treinos.data.repository.WorkoutRepository
+import com.fitforge.treinos.domain.ActiveSession
+import com.fitforge.treinos.domain.StartDecision
+import com.fitforge.treinos.domain.decideStart
 import com.fitforge.treinos.ui.theme.AppPalette
 import com.fitforge.treinos.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +25,7 @@ import kotlinx.coroutines.launch
 
 private data class HomeLocalState(
     val deleteCandidate: WorkoutEntity? = null,
+    val startConflict: StartConflict? = null,
     val showImportBackupConfirm: Boolean = false,
     val showAbout: Boolean = false,
     val busy: Boolean = false,
@@ -31,6 +36,7 @@ private data class HomeLocalState(
 class HomeViewModel(
     private val repository: WorkoutRepository,
     private val settingsRepository: SettingsRepository,
+    private val sessionRepository: SessionRepository,
     private val backupManager: BackupManager,
     private val textFiles: TextFiles,
     ready: StateFlow<Boolean>
@@ -38,17 +44,36 @@ class HomeViewModel(
 
     private val local = MutableStateFlow(HomeLocalState())
 
-    val uiState: StateFlow<HomeUiState> = combine(
+    private val data = combine(
         repository.observeSummaries(),
         settingsRepository.settings,
-        ready,
-        local
-    ) { workouts, settings, isReady, local ->
+        sessionRepository.active,
+        ready
+    ) { workouts, settings, active, isReady ->
+        val activeSummary = active?.let { s -> workouts.firstOrNull { it.workout.id == s.workoutId } }
+        // Sessão de um treino que não existe mais (excluído ou backup restaurado): encerra.
+        if (active != null && activeSummary == null && isReady) {
+            viewModelScope.launch { sessionRepository.finishIf(active.workoutId) }
+        }
         HomeUiState(
             workouts = workouts,
             isLoading = !isReady,
             selectedPalette = settings.palette,
             themeMode = settings.themeMode,
+            activeSession = activeSummary?.let {
+                ActiveSessionInfo(
+                    workoutId = it.workout.id,
+                    workoutName = it.workout.name,
+                    doneCount = minOf(active.doneExerciseIds.size, it.exerciseCount),
+                    total = it.exerciseCount
+                )
+            }
+        )
+    }
+
+    val uiState: StateFlow<HomeUiState> = combine(data, local) { base, local ->
+        base.copy(
+            startConflict = local.startConflict,
             deleteCandidate = local.deleteCandidate,
             showImportBackupConfirm = local.showImportBackupConfirm,
             showAbout = local.showAbout,
@@ -61,6 +86,37 @@ class HomeViewModel(
         initialValue = HomeUiState()
     )
 
+    // ---------- Treino em andamento ----------
+
+    /**
+     * Tocar num treino. Devolve true quando pode abrir a tela do treino na hora;
+     * false quando há outro treino em andamento e a Home precisa perguntar.
+     */
+    fun requestStart(workout: WorkoutEntity): Boolean {
+        val active = uiState.value.activeSession
+        return when (decideStart(active?.let { ActiveSession(it.workoutId) }, workout.id)) {
+            StartDecision.StartNew, StartDecision.Resume -> true
+            is StartDecision.Conflict -> {
+                local.update { it.copy(startConflict = StartConflict(workout, active!!)) }
+                false
+            }
+        }
+    }
+
+    fun dismissConflict() = local.update { it.copy(startConflict = null) }
+
+    /** "Encerrar e iniciar": troca o treino em andamento pelo novo. */
+    fun replaceSession(onReady: (Long) -> Unit) {
+        val conflict = local.value.startConflict ?: return
+        local.update { it.copy(startConflict = null) }
+        viewModelScope.launch {
+            sessionRepository.start(conflict.target.id)
+            onReady(conflict.target.id)
+        }
+    }
+
+    // ---------- Excluir ----------
+
     fun requestDelete(workout: WorkoutEntity) = local.update { it.copy(deleteCandidate = workout) }
 
     fun dismissDelete() = local.update { it.copy(deleteCandidate = null) }
@@ -68,7 +124,10 @@ class HomeViewModel(
     fun confirmDelete() {
         val target = local.value.deleteCandidate ?: return
         local.update { it.copy(deleteCandidate = null) }
-        viewModelScope.launch { repository.deleteWorkout(target) }
+        viewModelScope.launch {
+            sessionRepository.finishIf(target.id)
+            repository.deleteWorkout(target)
+        }
     }
 
     fun selectPalette(palette: AppPalette) {
@@ -117,10 +176,14 @@ class HomeViewModel(
         if (uri == null) return
         runBusy {
             when (val result = backupManager.import(uri)) {
-                is BackupResult.Imported -> buildString {
-                    append("Backup restaurado: ${result.workouts} treino(s) e ${result.customExercises} exercício(s) personalizado(s).")
-                    if (result.skippedExercises > 0) {
-                        append(" ${result.skippedExercises} exercício(s) desconhecido(s) foram ignorados.")
+                is BackupResult.Imported -> {
+                    // Os treinos ganharam ids novos: o treino em andamento não existe mais.
+                    sessionRepository.finish()
+                    buildString {
+                        append("Backup restaurado: ${result.workouts} treino(s) e ${result.customExercises} exercício(s) personalizado(s).")
+                        if (result.skippedExercises > 0) {
+                            append(" ${result.skippedExercises} exercício(s) desconhecido(s) foram ignorados.")
+                        }
                     }
                 }
                 is BackupResult.Failed -> result.message

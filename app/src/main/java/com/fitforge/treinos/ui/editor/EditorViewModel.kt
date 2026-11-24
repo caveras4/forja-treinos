@@ -11,6 +11,7 @@ import com.fitforge.treinos.data.media.CustomMediaStorage
 import com.fitforge.treinos.data.media.MediaImportResult
 import com.fitforge.treinos.data.repository.CreateExerciseResult
 import com.fitforge.treinos.data.repository.ExerciseRepository
+import com.fitforge.treinos.data.repository.SessionRepository
 import com.fitforge.treinos.data.repository.WorkoutRepository
 import com.fitforge.treinos.domain.DraftErrors
 import com.fitforge.treinos.domain.MuscleGroups
@@ -74,7 +75,8 @@ class EditorViewModel(
     private val workoutRepository: WorkoutRepository,
     private val exerciseRepository: ExerciseRepository,
     private val mediaStorage: CustomMediaStorage,
-    private val textFiles: TextFiles
+    private val textFiles: TextFiles,
+    private val sessionRepository: SessionRepository? = null
 ) : ViewModel() {
 
     private val workoutId: Long? = savedStateHandle.get<Long>(ARG_WORKOUT_ID)?.takeIf { it >= 0 }
@@ -173,7 +175,9 @@ class EditorViewModel(
         }
         _uiState.update { it.copy(saving = true) }
         viewModelScope.launch {
-            workoutRepository.saveDraft(state.draft, workoutId)
+            val savedId = workoutRepository.saveDraft(state.draft, workoutId)
+            // Se este treino está em andamento, descarta marcações de exercícios removidos.
+            sessionRepository?.retain(savedId, state.draft.items.map { it.exerciseId })
             initialDraft = state.draft
             _uiState.update { it.copy(saving = false, finished = true) }
         }

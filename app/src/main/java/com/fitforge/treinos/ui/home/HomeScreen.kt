@@ -44,6 +44,7 @@ import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SettingsBrightness
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -55,6 +56,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -89,6 +91,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.fitforge.treinos.data.local.WorkoutEntity
 import com.fitforge.treinos.data.local.WorkoutSummary
+import com.fitforge.treinos.ui.components.SuccessColors
 import com.fitforge.treinos.ui.components.WorkoutBadge
 import com.fitforge.treinos.ui.components.paletteSwatch
 import com.fitforge.treinos.ui.theme.AppPalette
@@ -167,7 +170,8 @@ fun HomeScreen(
                     viewModel.startExport(workout)
                     exportWorkoutLauncher.launch("${fileSafe(workout.name)}.json")
                 },
-                onStartClick = onStartClick,
+                // Só um treino em andamento por vez: a Home pergunta antes de trocar.
+                onStartClick = { workout -> if (viewModel.requestStart(workout)) onStartClick(workout) },
                 onMessageShown = viewModel::messageShown
             )
         }
@@ -182,6 +186,32 @@ fun HomeScreen(
                 drawerContent = { ModalDrawerSheet(Modifier.widthIn(max = 310.dp)) { drawerContent() } }
             ) { scaffold() }
         }
+    }
+
+    uiState.startConflict?.let { conflict ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissConflict,
+            title = { Text("Treino em andamento") },
+            text = {
+                Text(
+                    "Você está fazendo \"${conflict.active.workoutName}\" " +
+                        "(${conflict.active.doneCount} de ${conflict.active.total} feitos). " +
+                        "Só dá para ter um treino em andamento por vez."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.dismissConflict()
+                    uiState.workouts.firstOrNull { it.workout.id == conflict.active.workoutId }
+                        ?.let { onStartClick(it.workout) }
+                }) { Text("Continuar ${conflict.active.workoutName}") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.replaceSession { onStartClick(conflict.target) }
+                }) { Text("Encerrar e iniciar ${conflict.target.name}") }
+            }
+        )
     }
 
     uiState.deleteCandidate?.let { candidate ->
@@ -319,11 +349,27 @@ private fun HomeScaffold(
                     .padding(innerPadding)
             )
 
-            else -> LazyVerticalGrid(
+            else -> Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+            // Fixa fora da lista: continua visível mesmo com a lista rolada.
+            uiState.activeSession?.let { active ->
+                ActiveSessionBanner(
+                    active = active,
+                    onContinue = {
+                        selectedActionWorkoutId = null
+                        uiState.workouts.firstOrNull { it.workout.id == active.workoutId }
+                            ?.let { onStartClick(it.workout) }
+                    },
+                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp)
+                )
+            }
+            LazyVerticalGrid(
                 columns = GridCells.Fixed(columns),
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
                     .testTag("lista_treinos"),
                 contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 96.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -344,6 +390,7 @@ private fun HomeScaffold(
                     WorkoutCard(
                         summary = summary,
                         isSelected = isSelected,
+                        active = uiState.activeSession?.takeIf { it.workoutId == workout.id },
                         onClick = {
                             if (selectedActionWorkoutId != null) selectedActionWorkoutId = null
                             else onStartClick(workout)
@@ -365,6 +412,7 @@ private fun HomeScaffold(
                     )
                 }
             }
+            }
         }
     }
 }
@@ -374,6 +422,7 @@ private fun HomeScaffold(
 private fun WorkoutCard(
     summary: WorkoutSummary,
     isSelected: Boolean,
+    active: ActiveSessionInfo?,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onClearSelection: () -> Unit,
@@ -384,12 +433,21 @@ private fun WorkoutCard(
     val workout = summary.workout
     val haptic = LocalHapticFeedback.current
 
+    val inProgress = active != null
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f) else MaterialTheme.colorScheme.surface,
+        color = when {
+            isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f)
+            inProgress -> SuccessColors.container().copy(alpha = 0.45f)
+            else -> MaterialTheme.colorScheme.surface
+        },
         border = BorderStroke(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+            width = if (isSelected || inProgress) 2.dp else 1.dp,
+            color = when {
+                isSelected -> MaterialTheme.colorScheme.primary
+                inProgress -> SuccessColors.accent()
+                else -> MaterialTheme.colorScheme.outlineVariant
+            }
         ),
         tonalElevation = if (isSelected) 3.dp else 1.dp,
         modifier = Modifier
@@ -435,11 +493,38 @@ private fun WorkoutCard(
                 if (!isSelected) {
                     Icon(
                         Icons.Rounded.PlayArrow,
-                        contentDescription = "Iniciar ${workout.name}",
+                        contentDescription = if (inProgress) "Continuar ${workout.name}" else "Iniciar ${workout.name}",
                         tint = paletteSwatch(workout.colorKey),
                         modifier = Modifier.size(28.dp)
                     )
                 }
+            }
+            if (active != null) {
+                Spacer(Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(color = SuccessColors.accent(), shape = RoundedCornerShape(50)) {
+                        Text(
+                            "EM ANDAMENTO",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        "${active.doneCount} de ${active.total} feitos",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = { if (active.total == 0) 0f else active.doneCount.toFloat() / active.total },
+                    color = SuccessColors.accent(),
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
             if (isSelected) {
                 Row(
@@ -607,4 +692,44 @@ private fun SectionLabel(text: String) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
     )
+}
+
+/** Faixa no topo da Home: o treino em andamento, com atalho para continuar. */
+@Composable
+private fun ActiveSessionBanner(active: ActiveSessionInfo, onContinue: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        color = SuccessColors.container(),
+        shape = RoundedCornerShape(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onContinue)
+            .testTag("faixa_em_andamento")
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Icon(Icons.Rounded.Timer, contentDescription = null, tint = SuccessColors.accent())
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "Treino em andamento",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = SuccessColors.onContainer()
+                )
+                Text(
+                    "${active.workoutName} · ${active.doneCount} de ${active.total}",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = SuccessColors.onContainer(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Text(
+                "Continuar",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = SuccessColors.accent()
+            )
+        }
+    }
 }

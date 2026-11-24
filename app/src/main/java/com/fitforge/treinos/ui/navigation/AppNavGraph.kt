@@ -58,6 +58,7 @@ fun AppNavGraph(
                         HomeViewModel(
                             repository = container.workoutRepository,
                             settingsRepository = container.settingsRepository,
+                            sessionRepository = container.sessionRepository,
                             backupManager = container.backupManager,
                             textFiles = textFiles,
                             ready = container.ready
@@ -90,7 +91,8 @@ fun AppNavGraph(
                             workoutRepository = container.workoutRepository,
                             exerciseRepository = container.exerciseRepository,
                             mediaStorage = container.mediaStorage,
-                            textFiles = textFiles
+                            textFiles = textFiles,
+                            sessionRepository = container.sessionRepository
                         )
                     }
                 }
@@ -105,7 +107,7 @@ fun AppNavGraph(
             val sessionViewModel: SessionViewModel = viewModel(
                 factory = viewModelFactory {
                     initializer {
-                        SessionViewModel(createSavedStateHandle(), container.workoutRepository)
+                        SessionViewModel(createSavedStateHandle(), container.workoutRepository, container.sessionRepository)
                     }
                 }
             )

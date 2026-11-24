@@ -70,6 +70,10 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
     LaunchedEffect(state.loading, state.workout) {
         if (!state.loading && state.workout == null) onBack()
     }
+    // Treino finalizado: volta para a Home (o progresso já foi apagado).
+    LaunchedEffect(state.finished) {
+        if (state.finished) onBack()
+    }
 
     Scaffold(
         topBar = {
@@ -79,7 +83,7 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
                         Text(state.workout?.name ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis)
                         if (state.items.isNotEmpty()) {
                             Text(
-                                "${state.doneCount} de ${state.items.size} feitos",
+                                "Em andamento · ${state.doneCount} de ${state.items.size} feitos",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -97,6 +101,10 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
                             Icon(Icons.Rounded.Replay, contentDescription = "Desmarcar todos")
                         }
                     }
+                    TextButton(
+                        onClick = viewModel::onFinishClick,
+                        modifier = Modifier.testTag("finalizar")
+                    ) { Text("Finalizar") }
                 }
             )
         }
@@ -138,7 +146,7 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
                                 color = SuccessColors.onContainer(),
                                 modifier = Modifier.weight(1f)
                             )
-                            Button(onClick = onBack) { Text("Finalizar") }
+                            Button(onClick = viewModel::finish) { Text("Finalizar") }
                         }
                     }
                 }
@@ -155,15 +163,32 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
             items(state.items, key = { it.item.id }) { detail ->
                 SessionItem(
                     detail = detail,
-                    done = detail.item.id in state.doneIds,
+                    done = state.isDone(detail),
                     expanded = state.expandedId == detail.item.id,
                     onToggleExpand = { viewModel.onToggleExpand(detail.item.id) },
-                    onToggleDone = { viewModel.onToggleDone(detail.item.id) },
+                    onToggleDone = { viewModel.onToggleDone(detail) },
                     onStepWeight = { delta -> viewModel.onStepWeight(detail, delta) },
                     onEditWeight = { viewModel.onOpenWeightDialog(detail) }
                 )
             }
         }
+    }
+
+    if (state.showFinishDialog) {
+        AlertDialog(
+            onDismissRequest = viewModel::onDismissFinish,
+            title = { Text("Finalizar treino?") },
+            text = {
+                Text(
+                    "Você fez ${state.doneCount} de ${state.items.size} exercícios. " +
+                        "Ao finalizar, as marcações de feito são apagadas. As cargas continuam salvas."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = viewModel::finish, modifier = Modifier.testTag("confirmar_finalizar")) { Text("Finalizar") }
+            },
+            dismissButton = { TextButton(onClick = viewModel::onDismissFinish) { Text("Continuar treino") } }
+        )
     }
 
     state.weightDialog?.let { dialog ->
