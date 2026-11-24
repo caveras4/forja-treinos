@@ -1,0 +1,41 @@
+{
+  "formato": "forja-treino",
+  "versao": 1,
+  "treino": {
+    "nome": "Treino B1 – Força",
+    "foco": "Costas e Bíceps",
+    "cor": "cobalt",
+    "exercicios": [
+      {
+        "id": "barra-fixa",
+        "series": 4,
+        "repeticoes": 10
+      },
+      {
+        "id": "remada-curvada-barra",
+        "series": 4,
+        "repeticoes": 8
+      },
+      {
+        "id": "remada-baixa",
+        "series": 3,
+        "repeticoes": 10
+      },
+      {
+        "id": "face-pull",
+        "series": 3,
+        "repeticoes": 15
+      },
+      {
+        "id": "rosca-direta-barra",
+        "series": 3,
+        "repeticoes": 10
+      },
+      {
+        "id": "rosca-alternada",
+        "series": 2,
+        "repeticoes": 12
+      }
+    ]
+  }
+}

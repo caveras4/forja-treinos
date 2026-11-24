@@ -21,7 +21,7 @@ class CatalogAssetsTest {
         val assets = InstrumentationRegistry.getInstrumentation().targetContext.assets
         val text = assets.open("exercises.json").bufferedReader().use { it.readText() }
         val list = Json.parseToJsonElement(text).jsonObject["exercicios"]!!.jsonArray
-        assertEquals(174, list.size)
+        assertEquals(175, list.size)
 
         val ids = HashSet<String>()
         val problems = mutableListOf<String>()

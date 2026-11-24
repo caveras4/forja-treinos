@@ -1,0 +1,41 @@
+{
+  "formato": "forja-treino",
+  "versao": 1,
+  "treino": {
+    "nome": "Treino C2 – Posterior e Glúteo",
+    "foco": "Pernas, Glúteo e Abdômen",
+    "cor": "amber",
+    "exercicios": [
+      {
+        "id": "stiff-barra",
+        "series": 4,
+        "repeticoes": 8
+      },
+      {
+        "id": "agachamento-bulgaro",
+        "series": 3,
+        "repeticoes": 10
+      },
+      {
+        "id": "mesa-flexora",
+        "series": 3,
+        "repeticoes": 12
+      },
+      {
+        "id": "elevacao-pelvica",
+        "series": 4,
+        "repeticoes": 10
+      },
+      {
+        "id": "cadeira-abdutora",
+        "series": 3,
+        "repeticoes": 15
+      },
+      {
+        "id": "panturrilha-sentado",
+        "series": 3,
+        "repeticoes": 20
+      }
+    ]
+  }
+}

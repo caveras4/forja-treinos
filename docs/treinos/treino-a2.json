@@ -1,0 +1,46 @@
+{
+  "formato": "forja-treino",
+  "versao": 1,
+  "treino": {
+    "nome": "Treino A2 – Volume",
+    "foco": "Peito, Ombros e Tríceps",
+    "cor": "emerald",
+    "exercicios": [
+      {
+        "id": "supino-inclinado-maquina",
+        "series": 4,
+        "repeticoes": 12
+      },
+      {
+        "id": "crossover-polia-alta",
+        "series": 3,
+        "repeticoes": 15
+      },
+      {
+        "id": "desenvolvimento-maquina",
+        "series": 3,
+        "repeticoes": 12
+      },
+      {
+        "id": "elevacao-lateral-cabo",
+        "series": 3,
+        "repeticoes": 15
+      },
+      {
+        "id": "triceps-corda",
+        "series": 3,
+        "repeticoes": 15
+      },
+      {
+        "id": "triceps-frances-halter",
+        "series": 2,
+        "repeticoes": 12
+      },
+      {
+        "id": "prancha-lateral",
+        "series": 3,
+        "repeticoes": 30
+      }
+    ]
+  }
+}

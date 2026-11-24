@@ -1,0 +1,41 @@
+{
+  "formato": "forja-treino",
+  "versao": 1,
+  "treino": {
+    "nome": "Treino B2 – Volume",
+    "foco": "Costas e Bíceps",
+    "cor": "cobalt",
+    "exercicios": [
+      {
+        "id": "puxada-triangulo",
+        "series": 4,
+        "repeticoes": 12
+      },
+      {
+        "id": "remada-unilateral-halter",
+        "series": 3,
+        "repeticoes": 12
+      },
+      {
+        "id": "pulldown-bracos-estendidos",
+        "series": 3,
+        "repeticoes": 15
+      },
+      {
+        "id": "face-pull",
+        "series": 3,
+        "repeticoes": 15
+      },
+      {
+        "id": "rosca-martelo",
+        "series": 3,
+        "repeticoes": 12
+      },
+      {
+        "id": "rosca-scott-maquina",
+        "series": 2,
+        "repeticoes": 12
+      }
+    ]
+  }
+}
