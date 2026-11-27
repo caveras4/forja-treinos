@@ -1,5 +1,8 @@
 package com.fitforge.treinos.ui.navigation
 
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -27,6 +30,9 @@ import com.fitforge.treinos.ui.home.HomeViewModel
 import com.fitforge.treinos.ui.session.SessionScreen
 import com.fitforge.treinos.ui.session.SessionViewModel
 
+private const val NAV_MS = 300
+private const val NAV_FADE_OUT_MS = 90
+
 object Routes {
     const val HOME = "home"
     const val EDITOR = "editor?workoutId={workoutId}"
@@ -46,10 +52,25 @@ fun AppNavGraph(
     NavHost(
         navController = navController,
         startDestination = Routes.HOME,
-        enterTransition = { slideInHorizontally(tween(220)) { it / 6 } + fadeIn(tween(220)) },
-        exitTransition = { fadeOut(tween(180)) },
-        popEnterTransition = { fadeIn(tween(200)) },
-        popExitTransition = { slideOutHorizontally(tween(220)) { it / 6 } + fadeOut(tween(180)) }
+        // "Eixo compartilhado" do Material: as duas telas andam juntas um pouco para o lado.
+        // A que sai some rápido e a que entra aparece depois, então nunca ficam as duas
+        // meio transparentes uma por cima da outra.
+        enterTransition = {
+            slideInHorizontally(tween(NAV_MS, easing = FastOutSlowInEasing)) { it / 10 } +
+                fadeIn(tween(NAV_MS - NAV_FADE_OUT_MS, delayMillis = NAV_FADE_OUT_MS, easing = LinearOutSlowInEasing))
+        },
+        exitTransition = {
+            slideOutHorizontally(tween(NAV_MS, easing = FastOutSlowInEasing)) { -it / 10 } +
+                fadeOut(tween(NAV_FADE_OUT_MS, easing = FastOutLinearInEasing))
+        },
+        popEnterTransition = {
+            slideInHorizontally(tween(NAV_MS, easing = FastOutSlowInEasing)) { -it / 10 } +
+                fadeIn(tween(NAV_MS - NAV_FADE_OUT_MS, delayMillis = NAV_FADE_OUT_MS, easing = LinearOutSlowInEasing))
+        },
+        popExitTransition = {
+            slideOutHorizontally(tween(NAV_MS, easing = FastOutSlowInEasing)) { it / 10 } +
+                fadeOut(tween(NAV_FADE_OUT_MS, easing = FastOutLinearInEasing))
+        }
     ) {
         composable(Routes.HOME) {
             val homeViewModel: HomeViewModel = viewModel(

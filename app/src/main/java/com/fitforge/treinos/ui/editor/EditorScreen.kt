@@ -157,7 +157,8 @@ private fun PickerStep(
     onConclude: () -> Unit
 ) {
     val selectedCount = state.draft.items.size
-    val groups = state.groups
+    // Só reagrupa quando o catálogo, a busca ou o filtro mudam, não a cada toque num card.
+    val groups = remember(state.exercises, state.query, state.groupFilter) { state.groups }
 
     Scaffold(
         topBar = {

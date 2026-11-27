@@ -26,7 +26,11 @@ android {
 
     buildTypes {
         release {
+            // Uso pessoal: assina com a chave de debug desta máquina para dar para instalar
+            // direto no celular. Para publicar numa loja, troque por uma keystore própria.
+            signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

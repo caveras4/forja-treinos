@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.Timer
@@ -30,6 +31,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,6 +53,81 @@ fun SessionConflictDialog(
     onReplace: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    SessionProgressDialog(
+        testTag = "dialogo_conflito",
+        icon = Icons.Rounded.Timer,
+        iconTint = SuccessColors.accent(),
+        iconBackground = SuccessColors.container(),
+        title = "Treino em andamento",
+        message = "Você está fazendo \"$activeName\" ($doneCount de $total feitos). " +
+            "Só dá para ter um treino em andamento por vez.",
+        workoutName = activeName,
+        doneCount = doneCount,
+        total = total,
+        continueTag = "conflito_continuar",
+        onContinue = onContinue,
+        dangerIcon = Icons.Rounded.SwapHoriz,
+        dangerLabel = "Encerrar e iniciar novo",
+        dangerTag = "conflito_encerrar",
+        onDanger = onReplace,
+        onDismiss = onDismiss
+    )
+}
+
+/**
+ * Finalizar com exercício faltando. Mesmo visual do aviso de troca: o botão de destaque
+ * é continuar, e o de encerrar fica em vermelho, para não finalizar sem querer.
+ */
+@Composable
+fun FinishWorkoutDialog(
+    workoutName: String,
+    doneCount: Int,
+    total: Int,
+    onContinue: () -> Unit,
+    onFinish: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val missing = total - doneCount
+    SessionProgressDialog(
+        testTag = "dialogo_finalizar",
+        icon = Icons.Rounded.Flag,
+        iconTint = MaterialTheme.colorScheme.error,
+        iconBackground = MaterialTheme.colorScheme.errorContainer,
+        title = "Finalizar treino?",
+        message = "Ainda falta${if (missing == 1) "" else "m"} $missing exercício${if (missing == 1) "" else "s"}. " +
+            "Ao finalizar, as marcações de feito são apagadas. As cargas continuam salvas.",
+        workoutName = workoutName,
+        doneCount = doneCount,
+        total = total,
+        continueTag = "finalizar_continuar",
+        onContinue = onContinue,
+        dangerIcon = Icons.Rounded.Flag,
+        dangerLabel = "Finalizar mesmo assim",
+        dangerTag = "confirmar_finalizar",
+        onDanger = onFinish,
+        onDismiss = onDismiss
+    )
+}
+
+@Composable
+private fun SessionProgressDialog(
+    testTag: String,
+    icon: ImageVector,
+    iconTint: Color,
+    iconBackground: Color,
+    title: String,
+    message: String,
+    workoutName: String,
+    doneCount: Int,
+    total: Int,
+    continueTag: String,
+    onContinue: () -> Unit,
+    dangerIcon: ImageVector,
+    dangerLabel: String,
+    dangerTag: String,
+    onDanger: () -> Unit,
+    onDismiss: () -> Unit
+) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(28.dp),
@@ -57,7 +135,7 @@ fun SessionConflictDialog(
             tonalElevation = 6.dp,
             modifier = Modifier
                 .widthIn(max = 420.dp)
-                .testTag("dialogo_conflito")
+                .testTag(testTag)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -68,33 +146,27 @@ fun SessionConflictDialog(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .background(SuccessColors.container())
+                        .background(iconBackground)
                 ) {
-                    Icon(
-                        Icons.Rounded.Timer,
-                        contentDescription = null,
-                        tint = SuccessColors.accent(),
-                        modifier = Modifier.size(30.dp)
-                    )
+                    Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(30.dp))
                 }
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "Treino em andamento",
+                    title,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Você está fazendo \"$activeName\" ($doneCount de $total feitos). " +
-                        "Só dá para ter um treino em andamento por vez.",
+                    message,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(16.dp))
 
-                // Resumo do treino atual, para a pessoa ver o que vai perder se encerrar.
+                // Resumo do treino, para a pessoa ver o que vai perder se encerrar.
                 Surface(
                     shape = RoundedCornerShape(16.dp),
                     color = SuccessColors.container().copy(alpha = 0.6f),
@@ -104,7 +176,7 @@ fun SessionConflictDialog(
                     Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                activeName,
+                                workoutName,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = SuccessColors.onContainer(),
@@ -142,24 +214,24 @@ fun SessionConflictDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp)
-                            .testTag("conflito_continuar")
+                            .testTag(continueTag)
                     ) {
                         Icon(Icons.Rounded.PlayArrow, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.size(8.dp))
                         Text("Continuar treino", fontWeight = FontWeight.SemiBold)
                     }
                     OutlinedButton(
-                        onClick = onReplace,
+                        onClick = onDanger,
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.6f)),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp)
-                            .testTag("conflito_encerrar")
+                            .testTag(dangerTag)
                     ) {
-                        Icon(Icons.Rounded.SwapHoriz, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Icon(dangerIcon, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.size(8.dp))
-                        Text("Encerrar e iniciar novo", fontWeight = FontWeight.SemiBold)
+                        Text(dangerLabel, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
