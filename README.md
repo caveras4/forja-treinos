@@ -15,14 +15,15 @@ atual de cada um e acompanha o treino do dia.
   as repetições e a carga. Dá para marcar o exercício como feito e alterar a carga com `−`/`+` ou digitando.
   **Não há histórico:** a carga nova substitui a anterior.
 - **Treino em andamento.** Tocar no card só abre o treino para ver. Para começar, toque no **▶** do card
-  na Home ou em **Iniciar** dentro do treino (no lugar onde fica o Finalizar). Só depois de iniciar dá para
-  marcar exercícios como feitos, e o progresso é salvo a cada marcação.
+  na Home ou em **Iniciar** dentro do treino (no lugar onde fica o Finalizar). Os quadrados de marcar feito só
+  aparecem depois de iniciar, e o progresso é salvo a cada marcação.
   Voltar para a Home ou fechar o app não perde nada. Só existe **um treino em andamento por vez**:
   ao iniciar outro, o app pergunta se você quer **Continuar treino** (o atual) ou **Encerrar e iniciar novo**.
   Na Home, o treino em andamento aparece numa faixa fixa no topo, de ponta a ponta da tela, com borda
   animada, ponto pulsando e barra de progresso. O card dele ocupa a linha inteira, com borda verde pulsando,
   etiqueta "EM ANDAMENTO" e barra de progresso.
-  **Finalizar** encerra o treino (com confirmação se faltar exercício). As cargas continuam salvas.
+  **Finalizar** encerra o treino. Se faltar exercício, um aviso no mesmo estilo do de troca mostra o
+  progresso e oferece **Continuar treino** ou **Finalizar mesmo assim**. As cargas continuam salvas.
 - **Editar treino** (segure o card na Home):
   - reordenar com toque longo e arrastar;
   - remover e adicionar exercícios;
@@ -90,8 +91,10 @@ Pré-requisitos: JDK 17 ou superior e Android SDK 35 (pelo Android Studio ou pel
 ./gradlew connectedDebugAndroidTest  # banco, migration, catálogo e telas (precisa de emulador/aparelho)
 ```
 
-O APK de release (`./gradlew assembleRelease`) sai sem assinatura. Para instalar no celular, assine com
-uma keystore sua.
+Para usar no celular, prefira o APK de release (`./gradlew assembleRelease`, em
+`app/build/outputs/apk/release/`): o Compose em debug é bem mais lento. O release é assinado com a chave
+de debug da máquina, então instala por cima do APK de debug sem perder os dados (desde que os dois
+tenham sido gerados no mesmo computador). Para publicar numa loja, troque por uma keystore própria.
 
 ## Catálogo de exercícios
 

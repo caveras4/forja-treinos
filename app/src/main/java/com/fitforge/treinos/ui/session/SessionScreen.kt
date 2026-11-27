@@ -2,6 +2,11 @@ package com.fitforge.treinos.ui.session
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -62,6 +67,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fitforge.treinos.data.local.WorkoutExerciseDetail
 import com.fitforge.treinos.domain.WeightFormat
 import com.fitforge.treinos.ui.components.ExerciseMedia
+import com.fitforge.treinos.ui.components.FinishWorkoutDialog
 import com.fitforge.treinos.ui.components.SessionConflictDialog
 import com.fitforge.treinos.ui.components.SuccessColors
 
@@ -216,19 +222,13 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit, onOpenWorkout
     }
 
     if (state.showFinishDialog) {
-        AlertDialog(
-            onDismissRequest = viewModel::onDismissFinish,
-            title = { Text("Finalizar treino?") },
-            text = {
-                Text(
-                    "Você fez ${state.doneCount} de ${state.items.size} exercícios. " +
-                        "Ao finalizar, as marcações de feito são apagadas. As cargas continuam salvas."
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = viewModel::finish, modifier = Modifier.testTag("confirmar_finalizar")) { Text("Finalizar") }
-            },
-            dismissButton = { TextButton(onClick = viewModel::onDismissFinish) { Text("Continuar treino") } }
+        FinishWorkoutDialog(
+            workoutName = state.workout?.name.orEmpty(),
+            doneCount = state.doneCount,
+            total = state.items.size,
+            onContinue = viewModel::onDismissFinish,
+            onFinish = viewModel::finish,
+            onDismiss = viewModel::onDismissFinish
         )
     }
 
@@ -299,17 +299,28 @@ private fun SessionItem(
                     .clickable(onClick = onToggleExpand)
                     .padding(start = 4.dp, end = 12.dp, top = 6.dp, bottom = 6.dp)
             ) {
-                Checkbox(
-                    checked = done,
-                    onCheckedChange = { onToggleDone() },
-                    // Só dá para marcar feito depois de tocar em Iniciar.
-                    enabled = started,
-                    colors = CheckboxDefaults.colors(checkedColor = SuccessColors.accent()),
-                    modifier = Modifier.semantics {
-                        contentDescription = if (done) "Desmarcar ${detail.exercise.name}" else "Marcar ${detail.exercise.name} como feito"
-                    }
-                )
-                Column(Modifier.weight(1f)) {
+                // Os quadrados de "feito" só aparecem no treino em andamento.
+                AnimatedVisibility(
+                    visible = started,
+                    enter = expandHorizontally(expandFrom = Alignment.Start) + fadeIn(),
+                    exit = shrinkHorizontally(shrinkTowards = Alignment.Start) + fadeOut()
+                ) {
+                    Checkbox(
+                        checked = done,
+                        onCheckedChange = { onToggleDone() },
+                        colors = CheckboxDefaults.colors(checkedColor = SuccessColors.accent()),
+                        modifier = Modifier.semantics {
+                            contentDescription = if (done) "Desmarcar ${detail.exercise.name}" else "Marcar ${detail.exercise.name} como feito"
+                        }
+                    )
+                }
+                // Sem o quadrado, o texto ganha a margem que ele ocupava, sem pular.
+                val textStart by animateDpAsState(if (started) 0.dp else 12.dp, label = "sessionItemStart")
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .padding(start = textStart)
+                ) {
                     Text(
                         detail.exercise.name,
                         style = MaterialTheme.typography.titleMedium,

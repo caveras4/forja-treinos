@@ -21,11 +21,13 @@ fun buildGroups(
     groupFilter: String?
 ): List<ExerciseGroup> {
     val q = normalizeForSearch(query)
+    // Normaliza cada nome uma vez só (a ordenação compararia o mesmo nome várias vezes).
     return exercises
         .asSequence()
         .filter { groupFilter == null || it.muscleGroup == groupFilter }
-        .filter { q.isEmpty() || normalizeForSearch(it.name).contains(q) }
-        .groupBy { it.muscleGroup }
-        .map { (group, list) -> ExerciseGroup(group, list.sortedBy { normalizeForSearch(it.name) }) }
+        .map { it to normalizeForSearch(it.name) }
+        .filter { (_, name) -> q.isEmpty() || name.contains(q) }
+        .groupBy { (exercise, _) -> exercise.muscleGroup }
+        .map { (group, list) -> ExerciseGroup(group, list.sortedBy { it.second }.map { it.first }) }
         .sortedBy { MuscleGroups.sortIndex(it.name) }
 }

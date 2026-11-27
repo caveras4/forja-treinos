@@ -19,7 +19,10 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.TileMode
@@ -468,7 +471,8 @@ private fun WorkoutCard(
     val haptic = LocalHapticFeedback.current
 
     val inProgress = active != null
-    // Borda do treino em andamento "respira" para chamar atenção.
+    // Borda do treino em andamento "respira" para chamar atenção. O valor só é lido na hora
+    // de desenhar (drawWithContent), então a animação não recompõe o card a cada quadro.
     val pulse = if (inProgress) {
         val transition = rememberInfiniteTransition(label = "cardPulse")
         transition.animateFloat(
@@ -476,8 +480,9 @@ private fun WorkoutCard(
             targetValue = 1f,
             animationSpec = infiniteRepeatable(tween(1100, easing = FastOutSlowInEasing), RepeatMode.Reverse),
             label = "cardPulseAlpha"
-        ).value
-    } else 1f
+        )
+    } else null
+    val accent = SuccessColors.accent()
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = when {
@@ -485,18 +490,31 @@ private fun WorkoutCard(
             inProgress -> SuccessColors.container().copy(alpha = 0.45f)
             else -> MaterialTheme.colorScheme.surface
         },
-        border = BorderStroke(
-            width = if (isSelected || inProgress) 2.dp else 1.dp,
-            color = when {
-                isSelected -> MaterialTheme.colorScheme.primary
-                inProgress -> SuccessColors.accent().copy(alpha = pulse)
-                else -> MaterialTheme.colorScheme.outlineVariant
-            }
-        ),
+        border = when {
+            isSelected -> BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            pulse != null -> null // desenhada abaixo, pulsando
+            else -> BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        },
         tonalElevation = if (isSelected) 3.dp else 1.dp,
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize()
+            .then(
+                if (pulse != null && !isSelected) {
+                    Modifier.drawWithContent {
+                        drawContent()
+                        val stroke = 2.dp.toPx()
+                        val radius = 20.dp.toPx() - stroke / 2
+                        drawRoundRect(
+                            color = accent.copy(alpha = pulse.value),
+                            topLeft = Offset(stroke / 2, stroke / 2),
+                            size = Size(size.width - stroke, size.height - stroke),
+                            cornerRadius = CornerRadius(radius, radius),
+                            style = Stroke(stroke)
+                        )
+                    }
+                } else Modifier
+            )
             .clip(RoundedCornerShape(20.dp))
             .combinedClickable(
                 onClick = onClick,

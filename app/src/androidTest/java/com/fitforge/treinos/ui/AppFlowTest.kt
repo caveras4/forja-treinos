@@ -169,7 +169,8 @@ class AppFlowTest {
 
         rule.waitUntilAtLeastOneExists(hasTestTag("sessao-leg-press"), 5_000)
         rule.onNodeWithText("Não iniciado", substring = true).assertExists()
-        rule.onNodeWithContentDescription("Marcar Leg press como feito").assertIsNotEnabled()
+        // Sem iniciar, não aparece o quadrado de marcar feito.
+        rule.onNodeWithContentDescription("Marcar Leg press como feito").assertDoesNotExist()
         assertEquals(null, runBlocking { container.sessionRepository.current() })
         rule.onNodeWithTag("finalizar").assertDoesNotExist()
 
@@ -313,6 +314,7 @@ class AppFlowTest {
 
         scrollHomeTo(second)
         rule.onNodeWithTag("iniciar-$second").performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("dialogo_conflito"), 5_000)
         rule.onNodeWithText("Só dá para ter um treino em andamento por vez", substring = true).assertIsDisplayed()
         rule.onNodeWithText("Continuar treino").performClick()
 
@@ -334,6 +336,7 @@ class AppFlowTest {
 
         scrollHomeTo(second)
         rule.onNodeWithTag("iniciar-$second").performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("dialogo_conflito"), 5_000)
         rule.onNodeWithText("Encerrar e iniciar novo").performClick()
         rule.waitUntilAtLeastOneExists(hasTestTag("sessao-face-pull"), 5_000)
         rule.onNodeWithText("0 de 2 feitos", substring = true).assertExists()
@@ -352,9 +355,13 @@ class AppFlowTest {
         rule.onNodeWithContentDescription("Marcar Leg press como feito").performClick()
 
         rule.onNodeWithTag("finalizar").performClick()
+        rule.onNodeWithTag("dialogo_finalizar").assertIsDisplayed()
         rule.onNodeWithText("Finalizar treino?").assertIsDisplayed()
-        rule.onNodeWithText("Continuar treino").performClick()
+        rule.onNodeWithText("Ainda falta 1 exercício", substring = true).assertExists()
+        rule.onNodeWithText("1/2").assertExists()
+        rule.onNodeWithTag("finalizar_continuar").performClick()
         rule.onNodeWithText("Finalizar treino?").assertDoesNotExist()
+        rule.onNodeWithTag("finalizar").assertExists()
 
         rule.onNodeWithTag("finalizar").performClick()
         rule.onNodeWithTag("confirmar_finalizar").performClick()
@@ -396,6 +403,7 @@ class AppFlowTest {
 
         // Iniciar lá dentro pergunta, e "Continuar treino" abre o que está em andamento.
         rule.onNodeWithTag("iniciar").performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("dialogo_conflito"), 5_000)
         rule.onNodeWithTag("dialogo_conflito").assertIsDisplayed()
         rule.onNodeWithText("Continuar treino").performClick()
         rule.waitUntilAtLeastOneExists(hasTestTag("sessao-leg-press"), 5_000)
@@ -415,6 +423,7 @@ class AppFlowTest {
         scrollHomeTo(second).performClick()
         rule.waitUntilAtLeastOneExists(hasTestTag("sessao-face-pull"), 5_000)
         rule.onNodeWithTag("iniciar").performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("dialogo_conflito"), 5_000)
         rule.onNodeWithText("Encerrar e iniciar novo").performClick()
         rule.waitUntilAtLeastOneExists(hasTestTag("finalizar"), 5_000)
         assertEquals(secondId, runBlocking { container.sessionRepository.current() }!!.workoutId)
