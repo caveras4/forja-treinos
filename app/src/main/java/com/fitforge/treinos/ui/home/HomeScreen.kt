@@ -3,6 +3,28 @@ package com.fitforge.treinos.ui.home
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.graphicsLayer
+import com.fitforge.treinos.ui.components.SessionConflictDialog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -105,7 +127,8 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     onCreateClick: () -> Unit,
     onEditClick: (WorkoutEntity) -> Unit,
-    onStartClick: (WorkoutEntity) -> Unit
+    /** Abre a tela do treino. Abrir não inicia: quem inicia é o ▶ ou o botão Iniciar lá dentro. */
+    onOpenClick: (Long) -> Unit
 ) {
     val exportWorkoutLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json"),
@@ -170,8 +193,9 @@ fun HomeScreen(
                     viewModel.startExport(workout)
                     exportWorkoutLauncher.launch("${fileSafe(workout.name)}.json")
                 },
+                onOpenClick = { workout -> onOpenClick(workout.id) },
                 // Só um treino em andamento por vez: a Home pergunta antes de trocar.
-                onStartClick = { workout -> if (viewModel.requestStart(workout)) onStartClick(workout) },
+                onStartClick = { workout -> viewModel.startWorkout(workout) { onOpenClick(workout.id) } },
                 onMessageShown = viewModel::messageShown
             )
         }
@@ -189,28 +213,16 @@ fun HomeScreen(
     }
 
     uiState.startConflict?.let { conflict ->
-        AlertDialog(
-            onDismissRequest = viewModel::dismissConflict,
-            title = { Text("Treino em andamento") },
-            text = {
-                Text(
-                    "Você está fazendo \"${conflict.active.workoutName}\" " +
-                        "(${conflict.active.doneCount} de ${conflict.active.total} feitos). " +
-                        "Só dá para ter um treino em andamento por vez."
-                )
+        SessionConflictDialog(
+            activeName = conflict.active.workoutName,
+            doneCount = conflict.active.doneCount,
+            total = conflict.active.total,
+            onContinue = {
+                viewModel.dismissConflict()
+                onOpenClick(conflict.active.workoutId)
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.dismissConflict()
-                    uiState.workouts.firstOrNull { it.workout.id == conflict.active.workoutId }
-                        ?.let { onStartClick(it.workout) }
-                }) { Text("Continuar ${conflict.active.workoutName}") }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    viewModel.replaceSession { onStartClick(conflict.target) }
-                }) { Text("Encerrar e iniciar ${conflict.target.name}") }
-            }
+            onReplace = { viewModel.replaceSession { onOpenClick(conflict.target.id) } },
+            onDismiss = viewModel::dismissConflict
         )
     }
 
@@ -280,6 +292,7 @@ private fun HomeScaffold(
     onEditClick: (WorkoutEntity) -> Unit,
     onDeleteClick: (WorkoutEntity) -> Unit,
     onExportClick: (WorkoutEntity) -> Unit,
+    onOpenClick: (WorkoutEntity) -> Unit,
     onStartClick: (WorkoutEntity) -> Unit,
     onMessageShown: () -> Unit
 ) {
@@ -355,16 +368,23 @@ private fun HomeScaffold(
                     .padding(innerPadding)
             ) {
             // Fixa fora da lista: continua visível mesmo com a lista rolada.
-            uiState.activeSession?.let { active ->
-                ActiveSessionBanner(
-                    active = active,
-                    onContinue = {
-                        selectedActionWorkoutId = null
-                        uiState.workouts.firstOrNull { it.workout.id == active.workoutId }
-                            ?.let { onStartClick(it.workout) }
-                    },
-                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp)
-                )
+            // Ocupa a largura toda da tela, de ponta a ponta.
+            AnimatedVisibility(
+                visible = uiState.activeSession != null,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                uiState.activeSession?.let { active ->
+                    ActiveSessionBanner(
+                        active = active,
+                        onContinue = {
+                            selectedActionWorkoutId = null
+                            uiState.workouts.firstOrNull { it.workout.id == active.workoutId }
+                                ?.let { onOpenClick(it.workout) }
+                        },
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
             LazyVerticalGrid(
                 columns = GridCells.Fixed(columns),
@@ -378,13 +398,22 @@ private fun HomeScaffold(
                 // A dica fica sempre na tela (só o texto muda), para a lista não "pular".
                 item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
                     Text(
-                        if (selectedActionWorkoutId == null) "Toque para iniciar · segure para editar"
+                        if (selectedActionWorkoutId == null) "Toque para ver · ▶ para iniciar · segure para editar"
                         else "Escolha: editar, exportar ou excluir",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                items(uiState.workouts, key = { it.workout.id }) { summary ->
+                items(
+                    uiState.workouts,
+                    key = { it.workout.id },
+                    // O treino em andamento ocupa a linha inteira (no tablet também).
+                    span = { summary ->
+                        androidx.compose.foundation.lazy.grid.GridItemSpan(
+                            if (summary.workout.id == uiState.activeSession?.workoutId) maxLineSpan else 1
+                        )
+                    }
+                ) { summary ->
                     val workout = summary.workout
                     val isSelected = selectedActionWorkoutId == workout.id
                     WorkoutCard(
@@ -393,7 +422,11 @@ private fun HomeScaffold(
                         active = uiState.activeSession?.takeIf { it.workoutId == workout.id },
                         onClick = {
                             if (selectedActionWorkoutId != null) selectedActionWorkoutId = null
-                            else onStartClick(workout)
+                            else onOpenClick(workout)
+                        },
+                        onStartClick = {
+                            selectedActionWorkoutId = null
+                            onStartClick(workout)
                         },
                         onLongClick = { selectedActionWorkoutId = workout.id },
                         onClearSelection = { selectedActionWorkoutId = null },
@@ -424,6 +457,7 @@ private fun WorkoutCard(
     isSelected: Boolean,
     active: ActiveSessionInfo?,
     onClick: () -> Unit,
+    onStartClick: () -> Unit,
     onLongClick: () -> Unit,
     onClearSelection: () -> Unit,
     onEditClick: () -> Unit,
@@ -434,6 +468,16 @@ private fun WorkoutCard(
     val haptic = LocalHapticFeedback.current
 
     val inProgress = active != null
+    // Borda do treino em andamento "respira" para chamar atenção.
+    val pulse = if (inProgress) {
+        val transition = rememberInfiniteTransition(label = "cardPulse")
+        transition.animateFloat(
+            initialValue = 0.45f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(1100, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+            label = "cardPulseAlpha"
+        ).value
+    } else 1f
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = when {
@@ -445,7 +489,7 @@ private fun WorkoutCard(
             width = if (isSelected || inProgress) 2.dp else 1.dp,
             color = when {
                 isSelected -> MaterialTheme.colorScheme.primary
-                inProgress -> SuccessColors.accent()
+                inProgress -> SuccessColors.accent().copy(alpha = pulse)
                 else -> MaterialTheme.colorScheme.outlineVariant
             }
         ),
@@ -491,12 +535,24 @@ private fun WorkoutCard(
                     )
                 }
                 if (!isSelected) {
-                    Icon(
-                        Icons.Rounded.PlayArrow,
-                        contentDescription = if (inProgress) "Continuar ${workout.name}" else "Iniciar ${workout.name}",
-                        tint = paletteSwatch(workout.colorKey),
-                        modifier = Modifier.size(28.dp)
-                    )
+                    // ▶ inicia o treino (ou continua, se já for o treino em andamento).
+                    val swatch = paletteSwatch(workout.colorKey)
+                    FilledIconButton(
+                        onClick = onStartClick,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = if (inProgress) SuccessColors.accent() else swatch.copy(alpha = 0.15f),
+                            contentColor = if (inProgress) Color.White else swatch
+                        ),
+                        modifier = Modifier
+                            .size(44.dp)
+                            .testTag("iniciar-${workout.name}")
+                    ) {
+                        Icon(
+                            Icons.Rounded.PlayArrow,
+                            contentDescription = if (inProgress) "Continuar ${workout.name}" else "Iniciar ${workout.name}",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
             }
             if (active != null) {
@@ -697,39 +753,121 @@ private fun SectionLabel(text: String) {
 /** Faixa no topo da Home: o treino em andamento, com atalho para continuar. */
 @Composable
 private fun ActiveSessionBanner(active: ActiveSessionInfo, onContinue: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        color = SuccessColors.container(),
-        shape = RoundedCornerShape(16.dp),
+    val accent = SuccessColors.accent()
+    val transition = rememberInfiniteTransition(label = "banner")
+    // Brilho que corre pelas bordas de cima e de baixo.
+    val shine by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(2200, easing = LinearEasing)),
+        label = "bannerShine"
+    )
+    // Ponto "ao vivo" pulsando.
+    val pulse by transition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(850, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "bannerPulse"
+    )
+    val progress by animateFloatAsState(
+        targetValue = if (active.total == 0) 0f else active.doneCount.toFloat() / active.total,
+        animationSpec = tween(500),
+        label = "bannerProgress"
+    )
+
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .background(
+                Brush.horizontalGradient(
+                    listOf(SuccessColors.container(), SuccessColors.container().copy(alpha = 0.75f))
+                )
+            )
+            .drawBehind {
+                val stroke = 2.dp.toPx()
+                val band = size.width * 0.45f
+                val start = -band + (size.width + band) * shine
+                val shineBrush = Brush.horizontalGradient(
+                    colors = listOf(accent.copy(alpha = 0f), accent, accent.copy(alpha = 0f)),
+                    startX = start,
+                    endX = start + band,
+                    tileMode = TileMode.Clamp
+                )
+                listOf(0f, size.height - stroke).forEach { y ->
+                    drawRect(accent.copy(alpha = 0.35f), topLeft = Offset(0f, y), size = Size(size.width, stroke))
+                    drawRect(shineBrush, topLeft = Offset(0f, y), size = Size(size.width, stroke))
+                }
+            }
             .clickable(onClick = onContinue)
             .testTag("faixa_em_andamento")
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            Icon(Icons.Rounded.Timer, contentDescription = null, tint = SuccessColors.accent())
-            Spacer(Modifier.width(12.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 14.dp, bottom = 10.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp)) {
+                Box(
+                    Modifier
+                        .size(40.dp)
+                        .graphicsLayer {
+                            scaleX = 0.7f + 0.3f * pulse
+                            scaleY = 0.7f + 0.3f * pulse
+                            alpha = 1f - pulse * 0.6f
+                        }
+                        .clip(CircleShape)
+                        .background(accent.copy(alpha = 0.4f))
+                )
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(CircleShape)
+                        .background(accent)
+                ) {
+                    Icon(Icons.Rounded.Timer, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                }
+            }
+            Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(
-                    "Treino em andamento",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = SuccessColors.onContainer()
+                    "TREINO EM ANDAMENTO",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = accent
                 )
                 Text(
                     "${active.workoutName} · ${active.doneCount} de ${active.total}",
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = SuccessColors.onContainer(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            Text(
-                "Continuar",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = SuccessColors.accent()
-            )
+            Surface(color = accent, shape = RoundedCornerShape(50)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 14.dp, end = 10.dp, top = 8.dp, bottom = 8.dp)
+                ) {
+                    Text(
+                        "Continuar",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Icon(Icons.Rounded.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                }
+            }
         }
+        LinearProgressIndicator(
+            progress = { progress },
+            color = accent,
+            trackColor = accent.copy(alpha = 0.15f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, end = 20.dp, bottom = 14.dp)
+                .height(6.dp)
+                .clip(RoundedCornerShape(50))
+        )
     }
 }

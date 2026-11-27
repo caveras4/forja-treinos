@@ -14,11 +14,14 @@ atual de cada um e acompanha o treino do dia.
 - **Iniciar treino.** O app mostra a lista de exercícios. Tocar em um mostra a animação, as séries,
   as repetições e a carga. Dá para marcar o exercício como feito e alterar a carga com `−`/`+` ou digitando.
   **Não há histórico:** a carga nova substitui a anterior.
-- **Treino em andamento.** Tocar num treino o deixa em andamento, e o progresso é salvo a cada exercício marcado.
+- **Treino em andamento.** Tocar no card só abre o treino para ver. Para começar, toque no **▶** do card
+  na Home ou em **Iniciar** dentro do treino (no lugar onde fica o Finalizar). Só depois de iniciar dá para
+  marcar exercícios como feitos, e o progresso é salvo a cada marcação.
   Voltar para a Home ou fechar o app não perde nada. Só existe **um treino em andamento por vez**:
-  ao tocar em outro, o app pergunta se você quer continuar o atual ou encerrar e iniciar o novo.
-  Na Home, o treino em andamento aparece numa faixa fixa no topo ("Treino em andamento · 2 de 6 · Continuar")
-  e com o card destacado (borda verde, etiqueta "EM ANDAMENTO" e barra de progresso).
+  ao iniciar outro, o app pergunta se você quer **Continuar treino** (o atual) ou **Encerrar e iniciar novo**.
+  Na Home, o treino em andamento aparece numa faixa fixa no topo, de ponta a ponta da tela, com borda
+  animada, ponto pulsando e barra de progresso. O card dele ocupa a linha inteira, com borda verde pulsando,
+  etiqueta "EM ANDAMENTO" e barra de progresso.
   **Finalizar** encerra o treino (com confirmação se faltar exercício). As cargas continuam salvas.
 - **Editar treino** (segure o card na Home):
   - reordenar com toque longo e arrastar;
