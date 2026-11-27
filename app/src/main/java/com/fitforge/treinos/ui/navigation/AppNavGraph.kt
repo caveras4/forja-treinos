@@ -72,7 +72,7 @@ fun AppNavGraph(
                 viewModel = homeViewModel,
                 onCreateClick = { navController.navigate(Routes.create()) },
                 onEditClick = { navController.navigate(Routes.edit(it.id)) },
-                onStartClick = { navController.navigate(Routes.session(it.id)) }
+                onOpenClick = { navController.navigate(Routes.session(it)) }
             )
         }
 
@@ -111,7 +111,14 @@ fun AppNavGraph(
                     }
                 }
             )
-            SessionScreen(viewModel = sessionViewModel, onBack = { navController.popBackStack() })
+            SessionScreen(
+                viewModel = sessionViewModel,
+                onBack = { navController.popBackStack() },
+                // "Continuar treino" no aviso: troca esta tela pela do treino em andamento.
+                onOpenWorkout = { id ->
+                    navController.navigate(Routes.session(id)) { popUpTo(Routes.HOME) }
+                }
+            )
         }
     }
 }

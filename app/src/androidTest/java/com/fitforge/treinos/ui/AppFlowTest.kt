@@ -53,8 +53,10 @@ class AppFlowTest {
         rule.waitUntilAtLeastOneExists(hasTestTag("fab_criar"), 5_000)
     }
 
+    /** Inicia pelo ▶ do card na Home. */
     private fun openSession(name: String, firstExerciseTag: String) {
-        scrollHomeTo(name).performClick()
+        scrollHomeTo(name)
+        rule.onNodeWithTag("iniciar-$name").performClick()
         rule.waitUntilAtLeastOneExists(hasTestTag(firstExerciseTag), 5_000)
     }
 
@@ -150,9 +152,21 @@ class AppFlowTest {
     fun iniciarTreino_mostraDadosMarcaFeitoEAlteraCarga() {
         val name = "Sessao $suffix"
         createWorkout(name, "leg-press", "prancha")
+        // Tocar no card só abre o treino: ainda não está em andamento.
         scrollHomeTo(name).performClick()
 
         rule.waitUntilAtLeastOneExists(hasTestTag("sessao-leg-press"), 5_000)
+        rule.onNodeWithText("Não iniciado", substring = true).assertExists()
+        rule.onNodeWithContentDescription("Marcar Leg press como feito").assertIsNotEnabled()
+        assertEquals(null, runBlocking { container.sessionRepository.current() })
+        rule.onNodeWithTag("finalizar").assertDoesNotExist()
+
+        // Iniciar fica no lugar do Finalizar.
+        rule.onNodeWithTag("iniciar").performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("finalizar"), 5_000)
+        rule.onNodeWithTag("iniciar").assertDoesNotExist()
+        rule.onNodeWithText("0 de 2 feitos", substring = true).assertExists()
+
         rule.onNodeWithTag("sessao-leg-press").performClick()
         rule.onNodeWithContentDescription("Demonstração: Leg press").assertIsDisplayed()
         rule.onNodeWithText("Séries").assertExists()
@@ -285,9 +299,10 @@ class AppFlowTest {
         rule.onNodeWithContentDescription("Marcar Leg press como feito").performClick()
         backToHome()
 
-        scrollHomeTo(second).performClick()
+        scrollHomeTo(second)
+        rule.onNodeWithTag("iniciar-$second").performClick()
         rule.onNodeWithText("Só dá para ter um treino em andamento por vez", substring = true).assertIsDisplayed()
-        rule.onNodeWithText("Continuar $first").performClick()
+        rule.onNodeWithText("Continuar treino").performClick()
 
         // Abriu o PRIMEIRO, com o progresso intacto.
         rule.waitUntilAtLeastOneExists(hasTestTag("sessao-leg-press"), 5_000)
@@ -305,8 +320,9 @@ class AppFlowTest {
         rule.onNodeWithContentDescription("Marcar Leg press como feito").performClick()
         backToHome()
 
-        scrollHomeTo(second).performClick()
-        rule.onNodeWithText("Encerrar e iniciar $second").performClick()
+        scrollHomeTo(second)
+        rule.onNodeWithTag("iniciar-$second").performClick()
+        rule.onNodeWithText("Encerrar e iniciar novo").performClick()
         rule.waitUntilAtLeastOneExists(hasTestTag("sessao-face-pull"), 5_000)
         rule.onNodeWithText("0 de 2 feitos", substring = true).assertExists()
         backToHome()
@@ -348,5 +364,47 @@ class AppFlowTest {
         rule.onNodeWithText("Excluir").performClick()
         rule.waitUntil(5_000) { rule.onAllNodes(hasTestTag("faixa_em_andamento")).fetchSemanticsNodes().isEmpty() }
         assertEquals(null, runBlocking { container.sessionRepository.current() })
+    }
+
+    @Test
+    fun abrirOutroTreinoPeloCardNaoPerguntaENaoTroca() {
+        val first = "Ativo $suffix"
+        val second = "Olhar $suffix"
+        val firstId = createWorkout(first, "leg-press", "prancha")
+        createWorkout(second, "face-pull", "remada-baixa")
+        openSession(first, "sessao-leg-press")
+        backToHome()
+
+        // Só olhar outro treino não mexe no que está em andamento.
+        scrollHomeTo(second).performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("sessao-face-pull"), 5_000)
+        rule.onNodeWithTag("dialogo_conflito").assertDoesNotExist()
+        rule.onNodeWithTag("iniciar").assertExists()
+        assertEquals(firstId, runBlocking { container.sessionRepository.current() }!!.workoutId)
+
+        // Iniciar lá dentro pergunta, e "Continuar treino" abre o que está em andamento.
+        rule.onNodeWithTag("iniciar").performClick()
+        rule.onNodeWithTag("dialogo_conflito").assertIsDisplayed()
+        rule.onNodeWithText("Continuar treino").performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("sessao-leg-press"), 5_000)
+        rule.onNodeWithTag("finalizar").assertExists()
+        assertEquals(firstId, runBlocking { container.sessionRepository.current() }!!.workoutId)
+    }
+
+    @Test
+    fun iniciarDentroDoTreino_encerrarEIniciarNovo() {
+        val first = "Antigo $suffix"
+        val second = "Troca $suffix"
+        createWorkout(first, "leg-press", "prancha")
+        val secondId = createWorkout(second, "face-pull", "remada-baixa")
+        openSession(first, "sessao-leg-press")
+        backToHome()
+
+        scrollHomeTo(second).performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("sessao-face-pull"), 5_000)
+        rule.onNodeWithTag("iniciar").performClick()
+        rule.onNodeWithText("Encerrar e iniciar novo").performClick()
+        rule.waitUntilAtLeastOneExists(hasTestTag("finalizar"), 5_000)
+        assertEquals(secondId, runBlocking { container.sessionRepository.current() }!!.workoutId)
     }
 }

@@ -7,7 +7,9 @@ import com.fitforge.treinos.data.local.WorkoutEntity
 import com.fitforge.treinos.data.local.WorkoutExerciseDetail
 import com.fitforge.treinos.data.repository.SessionRepository
 import com.fitforge.treinos.data.repository.WorkoutRepository
+import com.fitforge.treinos.domain.StartDecision
 import com.fitforge.treinos.domain.WeightFormat
+import com.fitforge.treinos.domain.decideStart
 import com.fitforge.treinos.domain.WeightInput
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,6 +19,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+/** Tocou em Iniciar com outro treino em andamento. */
+data class SessionConflict(val workoutId: Long, val workoutName: String, val doneCount: Int, val total: Int)
 
 data class WeightDialogState(val itemId: Long, val exerciseName: String, val text: String, val error: String? = null)
 
@@ -29,7 +34,12 @@ data class SessionUiState(
     val expandedId: Long? = null,
     val weightDialog: WeightDialogState? = null,
     val showFinishDialog: Boolean = false,
-    val finished: Boolean = false
+    val finished: Boolean = false,
+    /** Este é o treino em andamento. Antes de tocar em Iniciar, a tela só mostra o treino. */
+    val started: Boolean = false,
+    val conflict: SessionConflict? = null,
+    /** Pedido para abrir outro treino (o que está em andamento). */
+    val openWorkoutId: Long? = null
 ) {
     fun isDone(detail: WorkoutExerciseDetail): Boolean = detail.exercise.id in doneExerciseIds
     val doneCount: Int get() = items.count { isDone(it) }
@@ -40,7 +50,9 @@ private data class LocalState(
     val expandedId: Long? = null,
     val weightDialog: WeightDialogState? = null,
     val showFinishDialog: Boolean = false,
-    val finished: Boolean = false
+    val finished: Boolean = false,
+    val conflict: SessionConflict? = null,
+    val openWorkoutId: Long? = null
 )
 
 /**
@@ -57,13 +69,16 @@ class SessionViewModel(
     private val local = MutableStateFlow(LocalState())
 
     init {
+        // Abrir a tela NÃO inicia o treino. Se ele já estiver em andamento, limpa marcações
+        // de exercícios que saíram do treino desde a última vez.
         viewModelScope.launch {
-            // A Home já resolveu o conflito; aqui só garantimos que ESTE é o treino ativo.
-            if (sessionRepository.current()?.workoutId != workoutId) sessionRepository.start(workoutId)
-            // Limpa marcações de exercícios que saíram do treino desde a última vez.
-            val ids = repository.observeExercises(workoutId).first().map { it.exercise.id }
-            sessionRepository.retain(workoutId, ids)
+            if (sessionRepository.current()?.workoutId == workoutId) retainCurrentExercises()
         }
+    }
+
+    private suspend fun retainCurrentExercises() {
+        val ids = repository.observeExercises(workoutId).first().map { it.exercise.id }
+        sessionRepository.retain(workoutId, ids)
     }
 
     val uiState: StateFlow<SessionUiState> = combine(
@@ -72,21 +87,61 @@ class SessionViewModel(
         sessionRepository.active,
         local
     ) { workout, items, active, local ->
+        val mine = active?.takeIf { it.workoutId == workoutId }
         SessionUiState(
             loading = false,
             workout = workout,
             items = items,
-            doneExerciseIds = active?.takeIf { it.workoutId == workoutId }?.doneExerciseIds.orEmpty(),
+            doneExerciseIds = mine?.doneExerciseIds.orEmpty(),
             expandedId = local.expandedId,
             weightDialog = local.weightDialog,
             showFinishDialog = local.showFinishDialog,
-            finished = local.finished
+            finished = local.finished,
+            started = mine != null,
+            conflict = local.conflict,
+            openWorkoutId = local.openWorkoutId
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SessionUiState())
 
     fun onToggleExpand(itemId: Long) = local.update {
         it.copy(expandedId = if (it.expandedId == itemId) null else itemId)
     }
+
+    /** Botão Iniciar. Se outro treino estiver em andamento, pergunta antes de trocar. */
+    fun onStartClick() {
+        viewModelScope.launch {
+            val active = sessionRepository.current()
+            when (decideStart(active, workoutId)) {
+                StartDecision.StartNew -> sessionRepository.startIfIdle(workoutId)
+                StartDecision.Resume -> Unit
+                is StartDecision.Conflict -> {
+                    val other = repository.observeWorkout(active!!.workoutId).first()
+                    if (other == null) {
+                        // Sessão de um treino que não existe mais: pode iniciar este direto.
+                        sessionRepository.start(workoutId)
+                    } else {
+                        val ids = repository.observeExercises(other.id).first().map { it.exercise.id }
+                        local.update {
+                            it.copy(conflict = SessionConflict(other.id, other.name, active.doneCount(ids), ids.size))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun onDismissConflict() = local.update { it.copy(conflict = null) }
+
+    /** "Continuar treino": abre o treino que já está em andamento. */
+    fun onContinueOther() = local.update { it.copy(conflict = null, openWorkoutId = it.conflict?.workoutId) }
+
+    /** "Encerrar e iniciar novo": troca o treino em andamento por este. */
+    fun onReplaceSession() {
+        local.update { it.copy(conflict = null) }
+        viewModelScope.launch { sessionRepository.start(workoutId) }
+    }
+
+    fun onOpenedOther() = local.update { it.copy(openWorkoutId = null) }
 
     fun onToggleDone(detail: WorkoutExerciseDetail) {
         viewModelScope.launch { sessionRepository.toggleDone(workoutId, detail.exercise.id) }

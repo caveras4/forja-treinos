@@ -89,17 +89,19 @@ class HomeViewModel(
     // ---------- Treino em andamento ----------
 
     /**
-     * Tocar num treino. Devolve true quando pode abrir a tela do treino na hora;
-     * false quando há outro treino em andamento e a Home precisa perguntar.
+     * Botão ▶ de um treino. Sem treino em andamento: inicia e chama [onReady]. Se for o próprio
+     * treino em andamento: só chama [onReady]. Se outro estiver em andamento: a Home pergunta.
      */
-    fun requestStart(workout: WorkoutEntity): Boolean {
+    fun startWorkout(workout: WorkoutEntity, onReady: () -> Unit) {
         val active = uiState.value.activeSession
-        return when (decideStart(active?.let { ActiveSession(it.workoutId) }, workout.id)) {
-            StartDecision.StartNew, StartDecision.Resume -> true
-            is StartDecision.Conflict -> {
-                local.update { it.copy(startConflict = StartConflict(workout, active!!)) }
-                false
+        when (decideStart(active?.let { ActiveSession(it.workoutId) }, workout.id)) {
+            StartDecision.StartNew -> viewModelScope.launch {
+                sessionRepository.startIfIdle(workout.id)
+                onReady()
             }
+            StartDecision.Resume -> onReady()
+            is StartDecision.Conflict ->
+                local.update { it.copy(startConflict = StartConflict(workout, active!!)) }
         }
     }
 

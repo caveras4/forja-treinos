@@ -24,10 +24,12 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,6 +49,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -59,12 +62,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fitforge.treinos.data.local.WorkoutExerciseDetail
 import com.fitforge.treinos.domain.WeightFormat
 import com.fitforge.treinos.ui.components.ExerciseMedia
+import com.fitforge.treinos.ui.components.SessionConflictDialog
 import com.fitforge.treinos.ui.components.SuccessColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
+fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit, onOpenWorkout: (Long) -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(state.openWorkoutId) {
+        state.openWorkoutId?.let {
+            viewModel.onOpenedOther()
+            onOpenWorkout(it)
+        }
+    }
 
     // Treino excluído enquanto a tela estava aberta.
     LaunchedEffect(state.loading, state.workout) {
@@ -83,9 +94,10 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
                         Text(state.workout?.name ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis)
                         if (state.items.isNotEmpty()) {
                             Text(
-                                "Em andamento · ${state.doneCount} de ${state.items.size} feitos",
+                                if (state.started) "Em andamento · ${state.doneCount} de ${state.items.size} feitos"
+                                else "Não iniciado · ${state.items.size} exercício${if (state.items.size == 1) "" else "s"}",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = if (state.started) SuccessColors.accent() else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -96,15 +108,34 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
                     }
                 },
                 actions = {
-                    if (state.doneCount > 0) {
-                        IconButton(onClick = viewModel::onReset) {
-                            Icon(Icons.Rounded.Replay, contentDescription = "Desmarcar todos")
+                    if (state.started) {
+                        if (state.doneCount > 0) {
+                            IconButton(onClick = viewModel::onReset) {
+                                Icon(Icons.Rounded.Replay, contentDescription = "Desmarcar todos")
+                            }
+                        }
+                        TextButton(
+                            onClick = viewModel::onFinishClick,
+                            modifier = Modifier.testTag("finalizar")
+                        ) { Text("Finalizar") }
+                    } else if (state.workout != null) {
+                        // Mesmo lugar do Finalizar: antes de iniciar, o botão é Iniciar.
+                        Button(
+                            onClick = viewModel::onStartClick,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = SuccessColors.accent(),
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(start = 12.dp, end = 16.dp),
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .testTag("iniciar")
+                        ) {
+                            Icon(Icons.Rounded.PlayArrow, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Iniciar")
                         }
                     }
-                    TextButton(
-                        onClick = viewModel::onFinishClick,
-                        modifier = Modifier.testTag("finalizar")
-                    ) { Text("Finalizar") }
                 }
             )
         }
@@ -117,7 +148,16 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            if (state.items.isNotEmpty()) {
+            if (!state.started && state.items.isNotEmpty()) {
+                item(key = "dica_iniciar") {
+                    Text(
+                        "Toque em Iniciar para começar e marcar os exercícios feitos.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            if (state.started && state.items.isNotEmpty()) {
                 item(key = "progresso") {
                     LinearProgressIndicator(
                         progress = { state.doneCount.toFloat() / state.items.size },
@@ -163,6 +203,7 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
             items(state.items, key = { it.item.id }) { detail ->
                 SessionItem(
                     detail = detail,
+                    started = state.started,
                     done = state.isDone(detail),
                     expanded = state.expandedId == detail.item.id,
                     onToggleExpand = { viewModel.onToggleExpand(detail.item.id) },
@@ -188,6 +229,17 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
                 TextButton(onClick = viewModel::finish, modifier = Modifier.testTag("confirmar_finalizar")) { Text("Finalizar") }
             },
             dismissButton = { TextButton(onClick = viewModel::onDismissFinish) { Text("Continuar treino") } }
+        )
+    }
+
+    state.conflict?.let { conflict ->
+        SessionConflictDialog(
+            activeName = conflict.workoutName,
+            doneCount = conflict.doneCount,
+            total = conflict.total,
+            onContinue = viewModel::onContinueOther,
+            onReplace = viewModel::onReplaceSession,
+            onDismiss = viewModel::onDismissConflict
         )
     }
 
@@ -218,6 +270,7 @@ fun SessionScreen(viewModel: SessionViewModel, onBack: () -> Unit) {
 @Composable
 private fun SessionItem(
     detail: WorkoutExerciseDetail,
+    started: Boolean,
     done: Boolean,
     expanded: Boolean,
     onToggleExpand: () -> Unit,
@@ -249,6 +302,8 @@ private fun SessionItem(
                 Checkbox(
                     checked = done,
                     onCheckedChange = { onToggleDone() },
+                    // Só dá para marcar feito depois de tocar em Iniciar.
+                    enabled = started,
                     colors = CheckboxDefaults.colors(checkedColor = SuccessColors.accent()),
                     modifier = Modifier.semantics {
                         contentDescription = if (done) "Desmarcar ${detail.exercise.name}" else "Marcar ${detail.exercise.name} como feito"
