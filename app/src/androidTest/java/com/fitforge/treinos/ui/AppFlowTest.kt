@@ -28,6 +28,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.performSemanticsAction
 import org.junit.runner.RunWith
 
 @OptIn(ExperimentalTestApi::class)
@@ -73,6 +75,16 @@ class AppFlowTest {
             runCatching {
                 rule.onNodeWithTag("lista_treinos").performScrollToNode(hasTestTag("treino-$name"))
             }.isSuccess
+        }
+        // O scroll para quando o card só aparece na beirada de baixo, e ali o ▶ fica atrás
+        // do botão "+": rola mais um pouco até o card inteiro ficar acima dele.
+        val card = rule.onNodeWithTag("treino-$name").fetchSemanticsNode().boundsInRoot
+        val fabTop = rule.onNodeWithTag("fab_criar").fetchSemanticsNode().boundsInRoot.top
+        if (card.bottom > fabTop) {
+            rule.onNodeWithTag("lista_treinos").performSemanticsAction(SemanticsActions.ScrollBy) {
+                it(0f, card.bottom - fabTop + 48f)
+            }
+            rule.waitForIdle()
         }
         return rule.onNodeWithTag("treino-$name")
     }
